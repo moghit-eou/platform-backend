@@ -29,6 +29,12 @@ jobs:
       - name: Setup tools
         run: bash .github/scripts/setup-tools.sh
 
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: maven-${{ hashFiles('**/pom.xml') }} #  generates a unique hash based on the content of pom.xml.
+
       - name: Resolve Maven dependencies
         run: mvn dependency:resolve -q
 
