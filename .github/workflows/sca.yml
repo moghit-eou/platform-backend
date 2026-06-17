@@ -3,7 +3,7 @@ name: SCA CI
 on:
   push: # To be removed after testing, SCA trigger on PRs only
     branches:
-      - ci/sca-pipeline
+      - sca-pipeline-clean 
   pull_request:
 
 
