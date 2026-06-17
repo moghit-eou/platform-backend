@@ -13,8 +13,7 @@ def run_trivy():
         "--format", "sarif", 
         "--output", "trivy.sarif", 
         "--exit-code", "1", 
-        "--severity", "CRITICAL,HIGH",
-        "--cache-dir", "/root/.m2"] 
+        "--severity", "CRITICAL,HIGH"] 
     
     result = subprocess.run(cmd)
     
