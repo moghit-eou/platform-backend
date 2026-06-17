@@ -9,10 +9,7 @@ on:
 
 jobs:
   sca:
-    runs-on: ubuntu-latest
-    container:
-      image: debian:trixie
-    
+    runs-on: ubuntu-latest    
     permissions:
       contents: read
       security-events: write # required for uploading SCA results to github security
