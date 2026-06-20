@@ -30,18 +30,23 @@ jobs:
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
-          path: ~/.m2/repository # cache the entire local maven repository, .m2 only is too braod and can cause cache corruption issues
+          path: ~/.m2/repository # /.m2 only is too braod and can cause cache corruption issues
           key: ${{ runner.os }}-m2-v1-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2-v1-
           
       - name: Resolve Maven dependencies
         run: mvn dependency:resolve -q
 
+
+      - name: Get current week
+        id: date
+        run: echo "week=$(date +'%Y-%U')" >> $GITHUB_OUTPUT
+        
       - name: Cache NVD database
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: ${{ runner.os }}-owasp-nvd-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-owasp-nvd-${{ steps.date.outputs.week }}
           restore-keys: |
             ${{ runner.os }}-owasp-nvd-
 
