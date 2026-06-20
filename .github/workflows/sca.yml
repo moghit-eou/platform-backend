@@ -65,9 +65,9 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
-          sarif_file: dependency-check-report.sarif
+          sarif_file: target/dependency-check-report.sarif
 
-      - name: Save Maven cache      # to be removed after testing, saving cache on faillure
+      - name: Save Maven cache      # to be removed after testing, saving cache on faillure as well, to be sure cache is saved even if the pipeline fails before the cache step
         uses: actions/cache/save@v4
         if: always()
         with:
