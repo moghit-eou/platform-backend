@@ -37,6 +37,14 @@ jobs:
       - name: Resolve Maven dependencies
         run: mvn dependency:resolve -q
 
+      - name: Cache NVD database
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: ${{ runner.os }}-owasp-nvd-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-owasp-nvd-
+
       - name: Run SCA tools
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
@@ -60,3 +68,11 @@ jobs:
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-m2-v1-${{ hashFiles('**/pom.xml') }}
+
+
+      - name: Save NVD cache     # to be removed after testing, saving cache on faillure 
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: ${{ runner.os }}-owasp-nvd-${{ hashFiles('**/pom.xml') }}
