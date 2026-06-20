@@ -31,7 +31,7 @@ def run_dependency_check():
     if not nvd_api_key:
             print(" == NVD_API_KEY is empty or missing")
             return 1
-            
+
     cmd = [
         "mvn", "org.owasp:dependency-check-maven:12.2.2:check",
         "-DnvdApiKey=" + nvd_api_key,
@@ -39,6 +39,7 @@ def run_dependency_check():
         "-DfailBuildOnCVSS=7",
         "-DoutputDirectory=.",
         "-DnvdMaxRetryCount=10",
+        "-DautoUpdate=false",
     ]
 
     result = subprocess.run(cmd)
