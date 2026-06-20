@@ -30,6 +30,8 @@ jobs:
         run: mvn dependency:resolve -q
 
       - name: Run SCA tools
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: python .github/scripts/run_sca.py
 
       - name: Upload Trivy SARIF to GitHub Security tab
@@ -37,3 +39,9 @@ jobs:
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
           sarif_file: trivy.sarif
+      
+      - name: Upload Dependency Check SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
+        with:
+          sarif_file: dependency-check-report.sarif

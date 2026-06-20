@@ -26,8 +26,18 @@ def run_osv_scanner():
     pass
 
 def run_dependency_check():
-    # TODO : Implement Dependency Check scanning logic here
-    pass
+    nvd_api_key = os.getenv("NVD_API_KEY")
+
+    cmd = [
+        "mvn", "org.owasp:dependency-check-maven:12.2.2:check",
+        "-DnvdApiKey=" + nvd_api_key,
+        "-Dformat=SARIF",
+        "-DfailBuildOnCVSS=7",
+        "-DoutputDirectory=.",
+    ]
+
+    result = subprocess.run(cmd)
+    return result.returncode
 
 def main():
     
