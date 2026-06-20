@@ -34,6 +34,7 @@ def run_dependency_check():
         "-Dformat=SARIF",
         "-DfailBuildOnCVSS=7",
         "-DoutputDirectory=.",
+        "-DnvdMaxRetryCount=10",
     ]
 
     result = subprocess.run(cmd)
