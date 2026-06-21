@@ -38,8 +38,8 @@ jobs:
         run: mvn dependency:resolve -q
 
 
-      - name: Get current week
-        id: date
+      - name: Get current week # Generates a weekly timestamp (e.g. 2026-25) used as part of the NVD cache key.
+        id: date               #This ensures the cache is refreshed at least once a week.
         run: echo "week=$(date +'%Y-%U')" >> $GITHUB_OUTPUT
         
       - name: Cache NVD database
