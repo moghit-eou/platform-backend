@@ -9,7 +9,7 @@ on:
 
 jobs:
   sca:
-    runs-on: ubuntu-latest    
+    runs-on: ubuntu-latest    # TODO: Migrate back to debian:trixie once pipeline MVP is fully stable
     permissions:
       contents: read
       security-events: write # required for uploading SCA results to github security
