@@ -38,8 +38,7 @@ def run_dependency_check():
         "-Dformat=SARIF",
         "-DfailBuildOnCVSS=7",
         "-DoutputDirectory=.",
-        "-DnvdMaxRetryCount=10",
-        "-Dnvd.api.delay=1500",
+        "-Dnvd.api.delay=100",
         "-Dnvd.api.max.retry.count=20",
        # "-DautoUpdate=false",
     ]
