@@ -39,7 +39,7 @@ def run_dependency_check():
         "-DfailBuildOnCVSS=7",
         "-DoutputDirectory=.",
         "-DnvdMaxRetryCount=10",
-        "-Dnvd.api.delay=1500",
+        "-Dnvd.api.delay=6000",
         "-Dnvd.api.max.retry.count=20",
        # "-DautoUpdate=false",
     ]
