@@ -39,7 +39,7 @@ def run_dependency_check():
         "-DfailBuildOnCVSS=7",
         "-DoutputDirectory=.",
         "-DnvdMaxRetryCount=10",
-        "-DautoUpdate=false",
+       # "-DautoUpdate=false",
     ]
 
     result = subprocess.run(cmd)
