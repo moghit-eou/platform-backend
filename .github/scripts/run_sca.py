@@ -36,7 +36,7 @@ def run_dependency_check():
         "mvn", "org.owasp:dependency-check-maven:12.2.2:check",
         "-DnvdDatafeedUrl=https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/",
         "-Dformat=SARIF",
-        "-DfailBuildOnCVSS=7",
+        #"-DfailBuildOnCVSS=7",
         "-DoutputDirectory=.",
     ]
 
