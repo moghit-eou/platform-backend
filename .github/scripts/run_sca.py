@@ -34,13 +34,10 @@ def run_dependency_check():
 
     cmd = [
         "mvn", "org.owasp:dependency-check-maven:12.2.2:check",
-        "-DnvdApiKey=" + nvd_api_key,
+        "-DnvdDatafeedUrl=https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/",
         "-Dformat=SARIF",
         "-DfailBuildOnCVSS=7",
         "-DoutputDirectory=.",
-        "-Dnvd.api.delay=100",
-        "-Dnvd.api.max.retry.count=20",
-       # "-DautoUpdate=false",
     ]
 
     result = subprocess.run(cmd)
