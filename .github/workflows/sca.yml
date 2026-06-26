@@ -37,22 +37,7 @@ jobs:
       - name: Resolve Maven dependencies
         run: mvn dependency:resolve -q
 
-
-      - name: Get current week # Generates a weekly timestamp (e.g. 2026-25) used as part of the NVD cache key.
-        id: date               #This ensures the cache is refreshed at least once a week.
-        run: echo "week=$(date +'%Y-%U')" >> $GITHUB_OUTPUT
-        
-      - name: Cache NVD database
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: ${{ runner.os }}-owasp-nvd-${{ steps.date.outputs.week }}
-          restore-keys: |
-            ${{ runner.os }}-owasp-nvd-
-
       - name: Run SCA tools
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: python .github/scripts/run_sca.py
 
       - name: Upload Trivy SARIF to GitHub Security tab
@@ -66,18 +51,3 @@ jobs:
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
           sarif_file: target/dependency-check-report.sarif
-
-      - name: Save Maven cache      # to be removed after testing, saving cache on faillure as well, to be sure cache is saved even if the pipeline fails before the cache step
-        uses: actions/cache/save@v4
-        if: failure()
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-m2-v1-${{ hashFiles('**/pom.xml') }}
-
-
-      - name: Save NVD cache     # to be removed after testing, saving cache on faillure 
-        uses: actions/cache/save@v4
-        if: failure()
-        with:
-          path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: ${{ runner.os }}-owasp-nvd-${{ steps.date.outputs.week }}

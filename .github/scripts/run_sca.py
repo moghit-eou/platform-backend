@@ -26,11 +26,6 @@ def run_osv_scanner():
     pass
 
 def run_dependency_check():
-    nvd_api_key = os.getenv("NVD_API_KEY")
-
-    if not nvd_api_key:
-            print(" == NVD_API_KEY is empty or missing")
-            return 1
 
     cmd = [
         "mvn", "org.owasp:dependency-check-maven:12.2.2:check",
@@ -53,6 +48,7 @@ def main():
         code = tool()
 
         if code and code != 0:
+            print(f"Tool {tool.__name__} failed with exit code {code}")
             failed_ci = True
     
     if failed_ci:
