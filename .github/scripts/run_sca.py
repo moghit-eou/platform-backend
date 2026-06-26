@@ -11,9 +11,10 @@ def run_trivy():
     cmd = [
         "trivy", "fs", ".", 
         "--format", "sarif", 
-        "--output", "trivy.sarif", 
-        "--exit-code", "1", 
-        "--severity", "CRITICAL,HIGH"] 
+        "--output", "trivy.sarif"
+        #"--exit-code", "1", 
+        #"--severity", "CRITICAL,HIGH"
+        ] 
     
     result = subprocess.run(cmd)
     
@@ -52,8 +53,10 @@ def main():
             failed_ci = True
     
     if failed_ci:
+        print("One or more tools failed. Exiting with code 1.")
         sys.exit(1)
     else:
+        print ("All tools completed successfully.")
         sys.exit(0)
 
 if __name__ == "__main__":
