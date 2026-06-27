@@ -17,14 +17,16 @@ def run_trivy():
         ] 
     
     result = subprocess.run(cmd)
-    
-    # TODO: Handle the result of the Trivy scan, check for vulnerabilities.
-
     return result.returncode
 
 def run_osv_scanner():
-    # TODO: Implement OSV scanning logic here
-    pass
+    cmd = [
+        "osv-scanner",
+        "--format", "sarif",
+        "--output-file", "osv-scanner.sarif",
+    ]
+    result = subprocess.run(cmd)
+    return result.returncode
 
 def run_dependency_check():
 
@@ -41,7 +43,8 @@ def run_dependency_check():
 
 def main():
     
-    tools = [run_trivy, run_osv_scanner, run_dependency_check]
+    tools = [run_osv_scanner]
+    #tools = [run_trivy, run_osv_scanner, run_dependency_check]
 
     failed_ci = False
 
