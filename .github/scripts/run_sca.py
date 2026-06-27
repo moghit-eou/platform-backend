@@ -24,6 +24,8 @@ def run_osv_scanner():
         "osv-scanner",
         "--format", "sarif",
         "--output-file", "osv-scanner.sarif",
+        "-r",
+        ".",
     ]
     result = subprocess.run(cmd)
     return result.returncode
