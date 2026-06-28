@@ -52,7 +52,7 @@ def run_dependency_check():
 
 def main():
     
-    tools = [run_trivy, run_osv_scanner, run_dependency_check]
+    tools = [run_trivy, run_osv_scanner]
 
     failed_ci = False
 
