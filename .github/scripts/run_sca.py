@@ -41,7 +41,7 @@ def run_osv_scanner():
 def run_dependency_check():
     cmd = [
         "./dependency-check/bin/dependency-check.sh",
-        "--scan", os.path.expanduser("~/.m2/platform-backend"),
+        "--scan", os.path.expanduser("~/.m2/repository"),
         "--nvdDatafeed", "https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/",
         "--format", "SARIF",
         "--out", ".",
