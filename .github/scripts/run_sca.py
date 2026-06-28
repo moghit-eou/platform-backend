@@ -16,8 +16,8 @@ def run_trivy():
         "--severity", "CRITICAL,HIGH",
         "--exit-code", "1"
     ]
-    result = subprocess.run(cmd)
-    return result.returncode
+    
+    return subprocess.run(cmd).returncode
 
 def run_osv_scanner():
     cmd = [
@@ -27,8 +27,7 @@ def run_osv_scanner():
         "--output-file", "osv-scanner.sarif",
     ]
     
-    result = subprocess.run(cmd)
-    return 0
+    return subprocess.run(cmd).returncode
 
 def run_dependency_check():
     cmd = [
@@ -39,8 +38,7 @@ def run_dependency_check():
         "--out", ".",
     ]
 
-    result = subprocess.run(cmd)
-    return result.returncode
+    return subprocess.run(cmd).returncode
 
 def main():
     
@@ -65,6 +63,9 @@ def main():
         status = "PASSED" if code == 0 else f"FAILED (exit code {code})"
         print(f"{tool_name}: {status}")
     print("==================================\n\n")
+
+    if failed_ci:
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
