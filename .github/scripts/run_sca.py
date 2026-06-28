@@ -23,6 +23,7 @@ def run_osv_scanner():
     cmd = [
         "osv-scanner", "scan", "source",
         "--lockfile", "target/bom.json",
+        "--config", ".github/scripts/osv-scanner.toml",
         "--format", "sarif",
         "--output-file", "osv-scanner.sarif",
     ]
