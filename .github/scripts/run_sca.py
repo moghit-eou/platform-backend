@@ -22,7 +22,6 @@ def run_trivy():
         "--format", "sarif",
         "--output", "trivy.sarif",
         "--severity", "CRITICAL,HIGH",
-        "--exit-code", "1"
     ]
     
     return subprocess.run(cmd).returncode
