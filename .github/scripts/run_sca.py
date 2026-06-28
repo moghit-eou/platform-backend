@@ -45,7 +45,7 @@ def run_dependency_check():
         "--nvdDatafeed", "https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/",
         "--format", "SARIF",
         "--out", ".",
-        "--failOnCVSS", "8",
+        "--failOnCVSS","8",
     ]
 
     return subprocess.run(cmd).returncode
