@@ -54,7 +54,7 @@ jobs:
           sarif_file: osv-scanner.sarif
 
       - name: Upload merged SARIF to GitHub Security tab
-        if: {{ always() && steps.upload_trivy.outcome == 'success' && steps.upload_osv.outcome == 'success' }}
+        if: ${{ always() && steps.upload_trivy.outcome == 'success' && steps.upload_osv.outcome == 'success' }}
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
           sarif_file: merged-SCA-report.sarif
