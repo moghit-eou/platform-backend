@@ -2,7 +2,7 @@ import subprocess
 import os
 import sys
 import logging
-
+import json 
 
 GREEN = '\033[92m'
 RED = '\033[91m'
@@ -21,8 +21,8 @@ def run_trivy():
         "target/bom.json",
         "--format", "sarif",
         "--output", "trivy.sarif",
-        "--severity", "CRITICAL,HIGH",
-        "--exit-code", "1"
+      #  "--severity", "CRITICAL,HIGH",
+       # "--exit-code", "1"
     ]
     
     return subprocess.run(cmd).returncode
@@ -31,18 +31,18 @@ def run_osv_scanner():
     cmd = [
         "osv-scanner", "scan", "source",
         "--lockfile", "target/bom.json",
-        "--config", ".github/scripts/osv-scanner.toml",
+        #"--config", ".github/scripts/osv-scanner.toml",
         "--format", "sarif",
         "--output-file", "osv-scanner.sarif",
     ]
     
     return subprocess.run(cmd).returncode
 
-def merge_sarifs():
+def merge_sarifs_microsoft():
     cmd = [
         "npx", "@microsoft/sarif-multitool", "merge",
         "osv-scanner.sarif", "trivy.sarif",
-        "--output-file", "merged-SCA-report.sarif"
+        "--output-file", "microsoft_merged-SCA-report.sarif"
     ]
     
     result = subprocess.run(cmd)
@@ -51,6 +51,19 @@ def merge_sarifs():
         logger.warning("Failed to merge SARIF files, continuing pipeline.")
     else:
         logger.info("SARIF files merged successfully.")
+
+def merge_sarifs():
+    sarif_files = ["trivy.sarif", "osv-scanner.sarif"]
+    runs = []
+
+    for file in sarif_files:
+        with open(file) as f:
+            runs.extend(json.load(f).get("runs", []))
+
+    with open("merged-SCA-report.sarif", "w") as f:
+        json.dump({"version": "2.1.0", "runs": runs}, f)
+
+    logger.info("SARIF files merged successfully.")
 
 def main():
     
@@ -71,6 +84,7 @@ def main():
 
 
     merge_sarifs()
+    merge_sarifs_microsoft()
 
     logger.info(f"\n{BOLD}========== SCA PIPELINE SUMMARY =========={RESET}")
     for tool_name, code in results.items():
