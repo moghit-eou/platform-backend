@@ -42,7 +42,7 @@ def merge_sarifs():
     cmd = [
         "npx", "@microsoft/sarif-multitool", "merge",
         "osv-scanner.sarif", "trivy.sarif",
-        "--output-file", "microsoft_merged-SCA-report.sarif"
+        "--output-file", "merged-SCA-report.sarif"
     ]
     
     result = subprocess.run(cmd)
