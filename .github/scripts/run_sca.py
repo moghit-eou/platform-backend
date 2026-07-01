@@ -38,17 +38,19 @@ def run_osv_scanner():
     
     return subprocess.run(cmd).returncode
 
-def run_dependency_check():
+def merge_sarifs():
     cmd = [
-        "./dependency-check/bin/dependency-check.sh",
-        "--scan", os.path.expanduser("~/.m2/repository"),
-        "--nvdDatafeed", "https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/",
-        "--format", "SARIF",
-        "--out", ".",
-        "--failOnCVSS","8",
+        "npx", "@microsoft/sarif-multitool", "merge",
+        "osv-scanner.sarif", "trivy.sarif",
+        "--output-file", "merged-SCA-report.sarif"
     ]
-
-    return subprocess.run(cmd).returncode
+    
+    result = subprocess.run(cmd)
+    
+    if result.returncode != 0:
+        logger.warning("Failed to merge SARIF files, continuing pipeline.")
+    else:
+        logger.info("SARIF files merged successfully.")
 
 def main():
     
@@ -66,6 +68,9 @@ def main():
             logger.error(f"{RED}[!] Tool {tool.__name__} failed with exit code {code}{RESET}")
             failed_ci = True
         logger.info("-" * 40)
+
+
+    merge_sarifs()
 
     logger.info(f"\n{BOLD}========== SCA PIPELINE SUMMARY =========={RESET}")
     for tool_name, code in results.items():

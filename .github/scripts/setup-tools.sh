@@ -10,7 +10,3 @@ chmod +x /usr/local/bin/osv-scanner
 
 # Generate the BOM using CycloneDX Maven Plugin
 mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom -q
-
-# Install Dependency-Check
-curl -L https://github.com/dependency-check/DependencyCheck/releases/download/v12.2.2/dependency-check-12.2.2-release.zip -o dependency-check.zip
-unzip dependency-check.zip -d .
