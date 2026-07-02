@@ -22,6 +22,7 @@ def run_trivy():
         "trivy", "sbom",
         "target/bom.json",
         "--format", "sarif",
+        "--ignorefile", ".github/scripts/supress_trivy.yaml
         "--output", "trivy.sarif"
     ]
 
@@ -31,7 +32,7 @@ def run_osv_scanner():
     cmd = [
         "osv-scanner", "scan", "source",
         "--lockfile", "target/bom.json",
-        "--config", ".github/scripts/osv-scanner.toml",
+        "--config", ".github/scripts/supress_osv_scanner.toml",
         "--format", "sarif",
         "--output-file", "osv-scanner.sarif"
     ]
