@@ -22,7 +22,7 @@ def run_trivy():
         "trivy", "sbom",
         "target/bom.json",
         "--format", "sarif",
-        "--ignorefile", ".github/scripts/supress_trivy.yaml
+        "--ignorefile", ".github/scripts/supress_trivy.yaml",
         "--output", "trivy.sarif"
     ]
 
