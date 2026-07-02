@@ -3,11 +3,13 @@ import os
 import sys
 import logging
 import json 
+from parse_sarif import evaluate
 
 GREEN = '\033[92m'
 RED = '\033[91m'
 RESET = '\033[0m'
 BOLD = '\033[1m'
+YELLOW = '\033[93m'  
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,11 +22,9 @@ def run_trivy():
         "trivy", "sbom",
         "target/bom.json",
         "--format", "sarif",
-        "--output", "trivy.sarif",
-      #  "--severity", "CRITICAL,HIGH",
-       # "--exit-code", "1"
+        "--output", "trivy.sarif"
     ]
-    
+
     return subprocess.run(cmd).returncode
 
 def run_osv_scanner():
@@ -33,14 +33,14 @@ def run_osv_scanner():
         "--lockfile", "target/bom.json",
         "--config", ".github/scripts/osv-scanner.toml",
         "--format", "sarif",
-        "--output-file", "osv-scanner.sarif",
+        "--output-file", "osv-scanner.sarif"
     ]
     
     return subprocess.run(cmd).returncode
 
 def merge_sarifs():
     cmd = [
-        "npx", "@microsoft/sarif-multitool", "merge",
+        "npx","--yes", "@microsoft/sarif-multitool@5.4.1", "merge",
         "osv-scanner.sarif", "trivy.sarif",
         "--output-file", "merged-SCA-report.sarif"
     ]
@@ -52,38 +52,51 @@ def merge_sarifs():
     else:
         logger.info("SARIF files merged successfully.")
 
+
+
 def main():
-    
     tools = [run_trivy, run_osv_scanner]
 
-    failed_ci = False
-
-    results = {}
-
+    exit_codes = {}
     for tool in tools:
-        code = tool()
-        results[tool.__name__] = code
-
-        if code and code != 0:
-            logger.error(f"{RED}[!] Tool {tool.__name__} failed with exit code {code}{RESET}")
-            failed_ci = True
+        exit_codes[tool.__name__] = tool()
         logger.info("-" * 40)
 
+    merge_sarifs()  # combined artifact only, not used for the gate decision
 
-    merge_sarifs()
+    sarif_files = {"trivy": "trivy.sarif", "osv-scanner": "osv-scanner.sarif"}
+    tool_status = {}   # "PASSED" | "WARNING" | "FAILED"
+    gate_failed = False
+
+    for name, path in sarif_files.items():
+        if not os.path.exists(path):
+            logger.error(f"{RED}[!] {name} SARIF file missing, skipping evaluation: {path}{RESET}")
+            tool_status[name] = "FAILED"
+            gate_failed = True
+            continue
+
+        eval_result = evaluate(path)
+
+        if eval_result.gate_failed:
+            tool_status[name] = "FAILED"          # this tool found CVSS >= 8.0
+            gate_failed = True
+        elif "No findings flagged" not in eval_result.console_table:
+            tool_status[name] = "WARNING"         # this tool found 5.0 <= CVSS < 8.0
+        else:
+            tool_status[name] = "PASSED"          # this tool found nothing >= 5.0
 
     logger.info(f"\n{BOLD}========== SCA PIPELINE SUMMARY =========={RESET}")
-    for tool_name, code in results.items():
-        if code == 0:
-            logger.info(f"[{tool_name}]: {GREEN}PASSED{RESET}")
+    for name, status in tool_status.items():
+        if status == "PASSED":
+            logger.info(f"[{name}]: {GREEN}PASSED{RESET}")
+        elif status == "WARNING":
+            logger.warning(f"[{name}]: {YELLOW}WARNING (findings between 5.0 and 8.0){RESET}")
         else:
-            logger.error(f"[{tool_name}]: {RED}FAILED (Exit Code {code}){RESET}")
+            logger.error(f"[{name}]: {RED}FAILED (CVSS >= 8.0 found){RESET}")
     logger.info(f"{BOLD}=========================================={RESET}\n")
 
-    if failed_ci:
-        logger.error(f"{RED}Pipeline blocked due to security findings.{RESET}")
+    if gate_failed:
         sys.exit(1)
 
 if __name__ == "__main__":
     main()
- 
