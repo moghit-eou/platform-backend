@@ -1,7 +1,6 @@
 import json
 import re
 from dataclasses import dataclass
-from tabulate import tabulate
 
 TRIVY_MSG_RE = re.compile(r"Package:\s*(\S+)\nInstalled Version:\s*(\S+)")
 OSV_MSG_RE = re.compile(r"Package\s+'([^@']+)@([^']+)'")
@@ -12,7 +11,6 @@ RUN_PATTERNS = [("trivy", TRIVY_MSG_RE), ("osv", OSV_MSG_RE)]
 class EvaluationResult:
     gate_failed: bool
     gate_warn: bool
-    console_table: str
 
 
 def evaluate(sarif_paths):
@@ -20,7 +18,7 @@ def evaluate(sarif_paths):
     if isinstance(sarif_paths, str):
         sarif_paths = [sarif_paths]
 
-    findings = {}  # (cve_id, package) -> [score, version]
+    findings = {}  # (cve_id, package) -> score
 
     for path in sarif_paths:
         with open(path) as f:
@@ -40,23 +38,15 @@ def evaluate(sarif_paths):
                 if not m:
                     continue
                 cve_id = res["ruleId"]
-                package, version = m.groups()
+                package, _version = m.groups()
                 score = scores.get(cve_id)
                 score = float(score) if score is not None else None
 
                 key = (cve_id, package)
-                if key not in findings or (score or 0) > (findings[key][0] or 0):
-                    findings[key] = [score, version]
+                if key not in findings or (score or 0) > (findings[key] or 0):
+                    findings[key] = score
 
-    rows = []
-    for (cve_id, package), (score, version) in findings.items():
-        if score is None or score < 5:
-            continue
-        flag = "FAIL" if score >= 8 else "WARN"
-        rows.append([cve_id, score, package, version, flag])
-
-    table = tabulate(rows, headers=["ID", "Score", "Package", "Version", "Flag"], tablefmt="fancy_grid")
-    gate_failed = any(r[4] == "FAIL" for r in rows)
-    gate_warn   = any(r[4] == "WARN" for r in rows)
-
-    return EvaluationResult(gate_failed=gate_failed,gate_warn=gate_warn, console_table=table)
+    return EvaluationResult(
+        gate_failed=any(s is not None and s >= 8 for s in findings.values()),
+        gate_warn=any(s is not None and 5 <= s < 8 for s in findings.values()),
+    )

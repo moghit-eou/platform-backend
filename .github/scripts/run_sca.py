@@ -71,7 +71,7 @@ def main():
     for name, path in sarif_files.items():
         if not os.path.exists(path):
             logger.error(f"{RED}[!] {name} SARIF file missing, skipping evaluation: {path}{RESET}")
-            tool_status[name] = "FAILED"
+            tool_status[name] = "FAILED, Something is wrong with the tool execution, please check the logs."
             gate_failed = True
             continue
 
@@ -80,7 +80,7 @@ def main():
         if eval_result.gate_failed:
             tool_status[name] = "FAILED"          # this tool found CVSS >= 8.0
             gate_failed = True
-        elif "No findings flagged" not in eval_result.console_table:
+        elif eval_result.gate_warn:
             tool_status[name] = "WARNING"         # this tool found 5.0 <= CVSS < 8.0
         else:
             tool_status[name] = "PASSED"          # this tool found nothing >= 5.0
