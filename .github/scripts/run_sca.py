@@ -40,18 +40,24 @@ def run_osv_scanner():
     return subprocess.run(cmd).returncode
 
 def merge_sarifs():
-    cmd = [
-        "npx","--yes", "@microsoft/sarif-multitool@5.4.1", "merge",
-        "osv-scanner.sarif", "trivy.sarif",
-        "--output-file", "merged-SCA-platform-backend.sarif"
-    ]
-    
-    result = subprocess.run(cmd)
-    
-    if result.returncode != 0:
-        logger.warning("Failed to merge SARIF files, continuing pipeline.")
-    else:
-        logger.info("SARIF files merged successfully.")
+    merged = {
+        "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [],
+    }
+
+    for path in ("trivy.sarif", "osv-scanner.sarif"):
+        if not os.path.exists(path):
+            logger.warning(f"{path} not found, skipping in merge")
+            continue
+        with open(path) as f:
+            sarif = json.load(f, strict=False)
+        merged["runs"].extend(sarif.get("runs", []))
+
+    with open("merged-SCA-platform-backend.sarif", "w") as f:
+        json.dump(merged, f)
+
+    logger.info("SARIF files merged successfully.")
 
 
 
