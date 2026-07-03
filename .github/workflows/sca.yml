@@ -22,10 +22,7 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 #v6.2.0
         with:
           python-version: '3.14.4'
-
-      - name: Setup tools
-        run: bash .github/scripts/setup-tools.sh
-
+          
       - name: Cache Maven packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
         with:
@@ -35,6 +32,9 @@ jobs:
    
       - name: Resolve Maven dependencies
         run: mvn dependency:resolve -q
+
+      - name: Setup tools
+        run: bash .github/scripts/setup-tools.sh
 
       - name: Run SCA tools
         run: python .github/scripts/run_sca.py
