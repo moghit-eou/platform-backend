@@ -37,25 +37,25 @@ jobs:
         run: bash .github/scripts/setup-tools.sh
 
       - name: Run SCA tools
-        run: python .github/scripts/run_sca.py
+        run: python .github/scripts/run_sca_app.py
 
       - name: Upload Trivy SARIF to GitHub Security tab
         id: upload_trivy
         if: always()
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
-          sarif_file: trivy.sarif
+          sarif_file: trivy-app.sarif
 
       - name: Upload OSV Scanner SARIF to GitHub Security tab
         id: upload_osv
         if: always()
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
-          sarif_file: osv-scanner.sarif
+          sarif_file: osv-scanner-app.sarif
 
       - name: Upload merged SARIF to GitHub Security tab
         if: ${{ always() && steps.upload_trivy.outcome == 'success' && steps.upload_osv.outcome == 'success' }}
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
-          sarif_file: merged-SCA-platform-backend.sarif
+          sarif_file: merged-SCA-platform-backend-app.sarif
           category: merged-sca
