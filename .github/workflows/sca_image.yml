@@ -24,7 +24,7 @@ jobs:
           python-version: '3.14.4'
      
       - name: Build Docker image
-        run: docker build -t platform-backend:local .  #Testing purpose , will change Sha later
+        run: docker build -t platform-backend:testing .
 
       - name: Setup tools
         run: bash .github/scripts/setup-tools.sh

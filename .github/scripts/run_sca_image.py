@@ -16,28 +16,26 @@ logging.basicConfig(
     format='%(message)s' # Clean format to prevent double-timestamps in CI logs
 )
 logger = logging.getLogger("sca-orchestrator")
-
 def run_trivy():
     cmd = [
         "trivy", "image",
-        "platform-backend:local",
+        "platform-backend:testing",
+        "--pkg-types", "os",
         "--format", "sarif",
         "--ignorefile", ".github/scripts/supress_trivy.yaml",
         "--output", "trivy-image.sarif"
     ]
-
     return subprocess.run(cmd).returncode
 
 
 def run_osv_scanner():
     cmd = [
         "osv-scanner", "scan", "image",
-        "platform-backend:local",
+        "platform-backend:testing",
         "--config", ".github/scripts/supress_osv_scanner.toml",
         "--format", "sarif",
         "--output-file", "osv-scanner-image.sarif"
     ]
-
     return subprocess.run(cmd).returncode
 
 def merge_sarifs():
@@ -87,8 +85,8 @@ def main():
         eval_result = evaluate(path)
 
         if eval_result.gate_failed:
-            tool_status[name] = "FAILED"          # this tool found CVSS >= 8.0
-            gate_failed = True
+            tool_status[name] = "FAILED"          # this tool found CVSS >= 8.0 
+            gate_failed = True                    # Fail the gate if any tool fails
         elif eval_result.gate_warn:
             tool_status[name] = "WARNING"         # this tool found 5.0 <= CVSS < 8.0
         else:
