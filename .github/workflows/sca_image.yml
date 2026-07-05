@@ -1,4 +1,4 @@
-name: SCA CI - app
+name: SCA CI - image
 
 on:
   push:
@@ -23,7 +23,9 @@ jobs:
         with:
           python-version: '3.14.4'
      
-     
+      - name: Build Docker image
+        run: docker build -t platform-backend:local .  #Testing purpose , will change Sha later
+
       - name: Setup tools
         run: bash .github/scripts/setup-tools.sh
 
