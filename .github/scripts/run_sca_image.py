@@ -105,6 +105,7 @@ def main():
     logger.info(f"{BOLD}=========================================={RESET}\n")
 
     if gate_failed:
+        logger.error(f"{RED}One or more SCA tools failed the gate check.{RESET}")
         sys.exit(1)
 
 if __name__ == "__main__":
