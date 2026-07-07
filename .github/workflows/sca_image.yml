@@ -9,10 +9,17 @@ on:
 jobs:
   sca:
     name: Software Composition Analysis
-    runs-on: ubuntu-latest    # TODO: Migrate back to debian:trixie once pipeline MVP is fully stable
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write # required for uploading SCA results to github security
+    env:
+      IMAGE_NAME: platform-backend:testing
+      TRIVY_IGNOREFILE: .github/scripts/suppress_trivy.yaml
+      OSV_IGNOREFILE: .github/scripts/suppress_osv_scanner.toml
+      TRIVY_SARIF_OUTPUT: trivy-image.sarif
+      OSV_SARIF_OUTPUT: osv-scanner-image.sarif
+      MERGED_SARIF_OUTPUT: merged-SCA-platform-backend-image.sarif
     
     steps:
       - name: Check out repository
@@ -24,7 +31,7 @@ jobs:
           python-version: '3.14.4'
      
       - name: Build Docker image
-        run: docker build -t platform-backend:testing .
+        run: docker build -t "${IMAGE_NAME}" .
 
       - name: Setup tools
         run: bash .github/scripts/setup-tools.sh
@@ -37,7 +44,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
-          sarif_file: trivy-image.sarif
+          sarif_file: ${TRIVY_SARIF_OUTPUT}
 
       - name: Upload OSV Scanner SARIF to GitHub Security tab
         id: upload_osv
