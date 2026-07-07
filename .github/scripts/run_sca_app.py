@@ -69,7 +69,6 @@ def merge_sarifs():
 
 
 def main():
-    show_env_sources()
     tools = [run_trivy, run_osv_scanner]
 
     exit_codes = {}
