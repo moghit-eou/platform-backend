@@ -43,7 +43,6 @@ def show_env_sources():
         else:
             print(f"{var} = {default}   <-- declared default")
 
-
 def run_trivy():
     cmd = [
         "trivy", "sbom",
