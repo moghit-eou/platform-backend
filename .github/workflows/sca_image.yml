@@ -30,15 +30,6 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 #v6.2.0
         with:
           python-version: '3.14.4'
-     
-      - name: Show environment variables
-        run: |
-          echo "IMAGE_NAMExxx=${IMAGE_NAME}"
-          echo "TRIVY_IGNOREFILE=${TRIVY_IGNOREFILE}"
-          echo "OSV_IGNOREFILE=${OSV_IGNOREFILE}"
-          echo "TRIVY_SARIF_OUTPUT=${TRIVY_SARIF_OUTPUT}"
-          echo "OSV_SARIF_OUTPUT=${OSV_SARIF_OUTPUT}"
-          echo "MERGED_SARIF_OUTPUT=${MERGED_SARIF_OUTPUT}"
 
       - name: Build Docker image
         run: docker build -t "${IMAGE_NAME}" .
