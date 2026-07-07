@@ -17,12 +17,11 @@ jobs:
       IMAGE_NAME: platform-backend:testing
       TRIVY_IGNOREFILE: .github/scripts/suppress_trivy.yaml
       OSV_IGNOREFILE: .github/scripts/suppress_osv_scanner.toml
-      TRIVY_SARIF_OUTPUT: PULLED_trivy-image.sarif
-      OSV_SARIF_OUTPUT: PULLED_osv-scanner-image.sarif
-      MERGED_SARIF_OUTPUT: PULLED_merged-SCA-platform-backend-image.sarif
+      TRIVY_SARIF_OUTPUT: trivy-image.sarif
+      OSV_SARIF_OUTPUT: osv-scanner-image.sarif
+      MERGED_SARIF_OUTPUT: merged-SCA-platform-backend-image.sarif
     
     steps:
-
       - name: Check out repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
