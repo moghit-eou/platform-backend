@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("sca-orchestrator")
 
-# Configurable values, no longer hardcoded below 
+# Configurable values
 SBOM_PATH = os.getenv("SBOM_PATH", "target/bom.json")
 TRIVY_IGNOREFILE = os.getenv("TRIVY_IGNOREFILE", ".github/scripts/suppress_trivy.yaml")
 OSV_IGNOREFILE = os.getenv("OSV_IGNOREFILE", ".github/scripts/suppress_osv_scanner.toml")

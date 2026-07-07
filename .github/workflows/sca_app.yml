@@ -9,7 +9,7 @@ on:
 jobs:
   sca:
     name: Software Composition Analysis
-    runs-on: ubuntu-latest    # TODO: Migrate back to debian:trixie once pipeline MVP is fully stable
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write # required for uploading SCA results to github security
@@ -19,7 +19,7 @@ jobs:
       OSV_IGNOREFILE: .github/scripts/suppress_osv_scanner.toml
       TRIVY_SARIF_OUTPUT: trivy-app.sarif
       OSV_SARIF_OUTPUT: osv-scanner-app.sarif
-      MERGED_SARIF_OUTPUT: merged-SCA-platform-backend-app .sarif
+      MERGED_SARIF_OUTPUT: merged-SCA-platform-backend-app.sarif
     
     steps:
       - name: Check out repository

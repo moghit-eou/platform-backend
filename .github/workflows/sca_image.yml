@@ -17,7 +17,7 @@ jobs:
       IMAGE_NAME: platform-backend:testing
       TRIVY_IGNOREFILE: .github/scripts/suppress_trivy.yaml
       OSV_IGNOREFILE: .github/scripts/suppress_osv_scanner.toml
-      TRIVY_SARIF_OUTPUT: trivy-image.sarif
+      TRIVY_SARIF_OUTPUT: trivy-imagex.sarif
       OSV_SARIF_OUTPUT: osv-scanner-image.sarif
       MERGED_SARIF_OUTPUT: merged-SCA-platform-backend-image.sarif
     
