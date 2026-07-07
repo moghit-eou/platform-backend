@@ -2,51 +2,60 @@ import subprocess
 import os
 import sys
 import logging
-import json 
+import json
 from parse_sarif import evaluate
 
 GREEN = '\033[92m'
 RED = '\033[91m'
 RESET = '\033[0m'
 BOLD = '\033[1m'
-YELLOW = '\033[93m'  
+YELLOW = '\033[93m'
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(message)s' # Clean format to prevent double-timestamps in CI logs
+    format='%(message)s'  # Clean format to prevent double-timestamps in CI logs
 )
 logger = logging.getLogger("sca-orchestrator")
+
+# Configurable values, no longer hardcoded below 
+SBOM_PATH = os.getenv("SBOM_PATH", "target/bom.json")
+TRIVY_IGNOREFILE = os.getenv("TRIVY_IGNOREFILE", ".github/scripts/suppress_trivy.yaml")
+OSV_IGNOREFILE = os.getenv("OSV_IGNOREFILE", ".github/scripts/suppress_osv_scanner.toml")
+TRIVY_SARIF_OUTPUT = os.getenv("TRIVY_SARIF_OUTPUT", "trivy-app.sarif")
+OSV_SARIF_OUTPUT = os.getenv("OSV_SARIF_OUTPUT", "osv-scanner-app.sarif")
+MERGED_SARIF_OUTPUT = os.getenv("MERGED_SARIF_OUTPUT", "merged-SCA-platform-backend-app.sarif")
+
 
 def run_trivy():
     cmd = [
         "trivy", "sbom",
-        "target/bom.json",
+        SBOM_PATH,
         "--format", "sarif",
-        "--ignorefile", ".github/scripts/supress_trivy.yaml",
-        "--output", "trivy-app.sarif"
+        "--ignorefile", TRIVY_IGNOREFILE,
+        "--output", TRIVY_SARIF_OUTPUT
     ]
-
     return subprocess.run(cmd).returncode
+
 
 def run_osv_scanner():
     cmd = [
         "osv-scanner", "scan", "source",
-        "--lockfile", "target/bom.json",
-        "--config", ".github/scripts/supress_osv_scanner.toml",
+        "--lockfile", SBOM_PATH,
+        "--config", OSV_IGNOREFILE,
         "--format", "sarif",
-        "--output-file", "osv-scanner-app.sarif"
+        "--output-file", OSV_SARIF_OUTPUT
     ]
-    
     return subprocess.run(cmd).returncode
+
 
 def merge_sarifs():
     merged = {
-        "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0.json",
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
         "version": "2.1.0",
         "runs": [],
     }
 
-    for path in ("trivy-app.sarif", "osv-scanner-app.sarif"):
+    for path in (TRIVY_SARIF_OUTPUT, OSV_SARIF_OUTPUT):
         if not os.path.exists(path):
             logger.warning(f"{path} not found, skipping in merge")
             continue
@@ -54,11 +63,10 @@ def merge_sarifs():
             sarif = json.load(f, strict=False)
         merged["runs"].extend(sarif.get("runs", []))
 
-    with open("merged-SCA-platform-backend-app.sarif", "w") as f:
+    with open(MERGED_SARIF_OUTPUT, "w") as f:
         json.dump(merged, f)
 
     logger.info("SARIF files merged successfully.")
-
 
 
 def main():
@@ -71,7 +79,7 @@ def main():
 
     merge_sarifs()  # combined artifact only, not used for the gate decision
 
-    sarif_files = {"trivy": "trivy-app.sarif", "osv-scanner": "osv-scanner-app.sarif"}
+    sarif_files = {"trivy": TRIVY_SARIF_OUTPUT, "osv-scanner": OSV_SARIF_OUTPUT}
     tool_status = {}   # "PASSED" | "WARNING" | "FAILED"
     gate_failed = False
 
