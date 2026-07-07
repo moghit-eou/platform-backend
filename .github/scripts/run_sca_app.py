@@ -25,24 +25,6 @@ TRIVY_SARIF_OUTPUT = os.getenv("TRIVY_SARIF_OUTPUT", "trivy-app.sarif")
 OSV_SARIF_OUTPUT = os.getenv("OSV_SARIF_OUTPUT", "osv-scanner-app.sarif")
 MERGED_SARIF_OUTPUT = os.getenv("MERGED_SARIF_OUTPUT", "merged-SCA-platform-backend-app.sarif")
 
-
-
-def show_env_sources():
-    defaults = {
-        "SBOM_PATH": "target/bom.json",
-        "TRIVY_IGNOREFILE": ".github/scripts/suppress_trivy.yaml",
-        "OSV_IGNOREFILE": ".github/scripts/suppress_osv_scanner.toml",
-        "TRIVY_SARIF_OUTPUT": "trivy-app.sarif",
-        "OSV_SARIF_OUTPUT": "osv-scanner-app.sarif",
-        "MERGED_SARIF_OUTPUT": "merged-SCA-platform-backend-app.sarif",
-    }
-
-    for var, default in defaults.items():
-        if var in os.environ:
-            print(f"{var} = {os.environ[var]}   <-- pulled from ENV")
-        else:
-            print(f"{var} = {default}   <-- declared default")
-
 def run_trivy():
     cmd = [
         "trivy", "sbom",

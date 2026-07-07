@@ -18,13 +18,12 @@ logging.basicConfig(
 logger = logging.getLogger("sca-orchestrator")
 
 # --- Configurable values, no longer hardcoded below ---
-IMAGE_NAME = os.getenv("IMAGE_NAME", "platform-backend:testing-not-pulled")  # Default value for local testing, should be overridden in CI
+IMAGE_NAME = os.getenv("IMAGE_NAME", "platform-backend:local")  # Default value for local testing, should be overridden in CI
 TRIVY_IGNOREFILE = os.getenv("TRIVY_IGNOREFILE", ".github/scripts/suppress_trivy.yaml")
 OSV_IGNOREFILE = os.getenv("OSV_IGNOREFILE", ".github/scripts/suppress_osv_scanner.toml")
 TRIVY_SARIF_OUTPUT = os.getenv("TRIVY_SARIF_OUTPUT", "trivy-image.sarif")
 OSV_SARIF_OUTPUT = os.getenv("OSV_SARIF_OUTPUT", "osv-scanner-image.sarif")
 MERGED_SARIF_OUTPUT = os.getenv("MERGED_SARIF_OUTPUT", "merged-SCA-platform-backend-image.sarif")
-
 
 def run_trivy():
     cmd = [
@@ -70,6 +69,7 @@ def merge_sarifs():
 
 
 def main():
+    show_env_sources()
     tools = [run_trivy, run_osv_scanner]
 
     exit_codes = {}
