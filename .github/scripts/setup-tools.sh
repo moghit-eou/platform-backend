@@ -11,16 +11,16 @@ OSV_SCANNER_VERSION="${OSV_SCANNER_VERSION:-v2.4.0}"
  
 # Installing Trivy
 echo "[setup-tools] Installing Trivy ${TRIVY_VERSION}"
-curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+sudo curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin "${TRIVY_VERSION}"
 trivy --version
 echo "Trivy installed OK"
  
 # Installing OSV Scanner
 echo "[setup-tools] Installing OSV Scanner ${OSV_SCANNER_VERSION}"
-curl -sfL "https://github.com/google/osv-scanner/releases/download/${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64" \
+sudo curl -sfL "https://github.com/google/osv-scanner/releases/download/${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64" \
   -o /usr/local/bin/osv-scanner
-chmod +x /usr/local/bin/osv-scanner
+sudo chmod +x /usr/local/bin/osv-scanner
 osv-scanner --version
 echo "OSV Scanner installed OK"
 
