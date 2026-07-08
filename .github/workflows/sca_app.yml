@@ -52,6 +52,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
           sarif_file: ${{ env.TRIVY_SARIF_OUTPUT }}
+          category: trivy-app
 
       - name: Upload OSV Scanner SARIF to GitHub Security tab
         id: upload_osv
@@ -59,6 +60,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
           sarif_file: ${{ env.OSV_SARIF_OUTPUT }}
+          category: osv-scanner-app
 
       - name: Upload merged SARIF to GitHub Security tab
         if: ${{ always() && steps.upload_trivy.outcome == 'success' && steps.upload_osv.outcome == 'success' }}
