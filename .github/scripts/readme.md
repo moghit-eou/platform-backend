@@ -136,7 +136,7 @@ Refer to the official documentation for complete suppression options:
 
 ## 6. Exit codes: how "vulnerabilities found" is told apart from "tool broke"
 
-**Trivy** exits `0` by default, even when it finds vulnerabilities. A non-default `--exit-code` flag would be needed to change that, and these scripts don't pass one. So any non-zero Trivy exit code here means the scan itself failed to run (bad image reference, registry auth failure, Docker daemon unavailable, malformed SBOM, etc.), a genuine tool error.
+**Trivy** exits `0` by default regardless of findings. Since these scripts don't change this, any non-zero exit code means the scan itself failed (e.g., bad image reference, Docker problems, or malformed SBOM).
 
 **OSV-Scanner** uses its exit code to report scan results, per its own docs:
 
@@ -155,12 +155,14 @@ Refer to the official documentation for complete suppression options:
 
 ## 8. Running it locally
 
+
 **Image pipeline**
 ```bash
 bash .github/scripts/setup-tools.sh            # installs trivy + osv-scanner
 docker build -t platform-backend:local .
 python .github/scripts/run_sca_image.py
 ```
+> **Note:** `mvn dependency:resolve` pulls all dependencies into `.m2` first, so the CycloneDX plugin has a resolved tree to build the SBOM from.
 
 **App pipeline**
 ```bash
