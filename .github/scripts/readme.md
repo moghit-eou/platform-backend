@@ -162,13 +162,13 @@ bash .github/scripts/setup-tools.sh            # installs trivy + osv-scanner
 docker build -t platform-backend:local .
 python .github/scripts/run_sca_image.py
 ```
+**App pipeline**
+
 > **Note:** `mvn dependency:resolve` pulls all dependencies into `.m2` first, so the CycloneDX plugin has a resolved tree to build the SBOM from.
 
-**App pipeline**
 ```bash
 mvn dependency:resolve
-bash .github/scripts/setup-tools.sh maven      # installs tools + generates target/bom.json
-SBOM_PATH=target/bom.json                      # make sure sbom is generated
+bash .github/scripts/setup-tools.sh maven  # installs tools + generates target/bom.json
 python .github/scripts/run_sca_app.py
 ```
 
@@ -188,4 +188,14 @@ All output paths and ignore-file locations are overridable via environment varia
 | `MERGED_SARIF_OUTPUT` | `merged-SCA-platform-backend-image.sarif` | `merged-SCA-platform-backend-app.sarif` | Combined artifact path |
 
 
----
+Each script hardcodes a default value for every variable via `os.getenv("VAR", "default")`. 
+The workflow's `env:` block sets the actual env var, which overrides that default at runtime. 
+the Python default only applies if no env var is set at all (e.g. running the script locally without one).
+
+For example `sca_image.yml`:
+```yaml
+env:
+  IMAGE_NAME: platform-backend:testing
+  TRIVY_IGNOREFILE: .github/scripts/suppress_trivy.yaml
+  ...
+```
