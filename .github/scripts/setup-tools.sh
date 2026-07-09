@@ -24,7 +24,6 @@ sudo chmod +x /usr/local/bin/osv-scanner
 osv-scanner --version
 echo "OSV Scanner installed OK"
 
-
 # Generate SBOM based on project type
 PROJECT_TYPE="${1:-none}"   # maven | npm | none
 
