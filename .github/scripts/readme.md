@@ -8,6 +8,17 @@ The pipeline executes a dual-layer scanning strategy using **Trivy** and **OSV-S
 
 - **Infrastructure Scanning**: Analyzes OS-level packages and layers within the built Docker containers.
 
+## Table of Contents
+
+- [1. Repository layout](#1-repository-layout)
+- [2. Architecture](#2-architecture)
+- [3. How one pipeline run works](#3-how-one-pipeline-run-works)
+- [4. Tool installation & SBOM generation (`setup-tools.sh`)](#4-tool-installation--sbom-generation-setup-toolssh)
+- [5. Suppressing a false positive](#5-suppressing-a-false-positive)
+- [6. Exit codes: how "vulnerabilities found" is told apart from "tool broke"](#6-exit-codes-how-vulnerabilities-found-is-told-apart-from-tool-broke)
+- [7. Running it locally](#7-running-it-locally)
+- [8. Environment variables](#8-environment-variables)
+
 ## 1. Repository layout
 
 ```
@@ -35,14 +46,14 @@ flowchart TD
         WF1 --> DB["Build Target Image"]
         DB --> ST1["setup-tools.sh"]
         ST1 --> RSI["run_sca_image.py"]
-        RSI -.-> |Generates .sarif| UP1["upload-sarif Action"]
+        RSI -.-> |Generates .sarif| UP1["upload-sarif"]
     end
 
     subgraph "App Pipeline"
         WF2 --> MVN["Resolve Dependencies"]
         MVN --> ST2["setup-tools.sh maven"]
         ST2 --> RSA["run_sca_app.py"]
-        RSA -.-> |Generates .sarif| UP2["upload-sarif Action"]
+        RSA -.-> |Generates .sarif| UP2["upload-sarif"]
     end
 
     UP1 --> SEC[("GitHub Security Tab")]
@@ -153,7 +164,7 @@ Refer to the official documentation for complete suppression options:
 
 ---
 
-## 8. Running it locally
+## 7. Running it locally
 
 
 **Image pipeline**
@@ -176,7 +187,7 @@ All output paths and ignore-file locations are overridable via environment varia
 
 ---
 
-## 9. Environment variables
+## 8. Environment variables
 | Variable | `run_sca_image.py` Default | `run_sca_app.py` Default | Purpose |
 |---|---|---|---|
 | `IMAGE_NAME` | `platform-backend:local` | — | Image reference to scan |
