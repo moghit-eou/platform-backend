@@ -5,6 +5,7 @@ on:
     branches:
       - CI/sca-pipeline-sbom
   pull_request:
+  workflow_dispatch:
 
 jobs:
   sca:
