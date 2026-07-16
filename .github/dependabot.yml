@@ -18,3 +18,4 @@ updates:
       default-days: 3
     labels:
       - "dependencies"
+
