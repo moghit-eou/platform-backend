@@ -1,6 +1,8 @@
 name: SAST CI
 
 on:
+  push:
+    branches: test/sast-pipeline
   pull_request:
   workflow_dispatch:
   schedule:
