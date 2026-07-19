@@ -1,0 +1,21 @@
+name: SAST CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1' # weekly SCA scan, every Monday 02:00 UTC
+
+jobs:
+  sca:
+    name: Software Composition Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # required for uploading SCA results to github security
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Test
+        run: echo "test"
