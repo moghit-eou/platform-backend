@@ -2,11 +2,8 @@
 name: Semgrep
 
 on:
-  # Scan changed files in PRs (diff-aware scanning):
   pull_request: {}
-  # Scan on-demand through GitHub Actions interface:
   workflow_dispatch: {}
-  # Scan mainline branches and report all findings:
   push:
 
 jobs:
@@ -28,9 +25,8 @@ jobs:
       contents: read
 
     steps:
-      # Fetch project source with GitHub Actions Checkout.
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Perform Semgrep Analysis
       # @NOTE: This is the actual semgrep command to scan your code.
@@ -41,7 +37,7 @@ jobs:
 
       # upload the results for the CodeQL GitHub app to annotate the code
       - name: Save SARIF results as artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: semgrep-scan-results
           path: semgrep-results.sarif
