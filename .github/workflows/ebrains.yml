@@ -2,7 +2,7 @@ name: Mirror to Ebrains
 
 on:
   push:
-    branches: [master, test/sast-pipeline]
+    branches: [master]
     tags:
       - "*"
 

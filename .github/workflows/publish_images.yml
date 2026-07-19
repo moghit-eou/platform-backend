@@ -4,7 +4,7 @@ on:
   release:
     types: [published]
   push:
-    branches: [master, test/sast-pipeline]
+    branches: [master]
 
 env:
   HARBOR_REGISTRY: docker-registry.ebrains.eu
