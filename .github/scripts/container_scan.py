@@ -189,7 +189,7 @@ def main():
         
     elif args.scan_type == "sca":
         logger.info(f"{BOLD}Initiating SCA pipeline on image: {args.image}{RESET}")
-        # Override the global IMAGE_NAME so your existing functions use the CLI flag
+        # Override the global IMAGE_NAME
         global IMAGE_NAME
         IMAGE_NAME = args.image
         handle_sca()

@@ -41,6 +41,7 @@ jobs:
         run: python .github/scripts/container_scan.py --scan-type sast
 
       - name: Run SCA scanning
+        if: always()
         run: python .github/scripts/container_scan.py --scan-type sca --image ${{ env.IMAGE_NAME }}
 
       - name: Upload Trivy SARIF to GitHub Security tab
@@ -59,9 +60,10 @@ jobs:
           sarif_file: ${{ env.OSV_SARIF_OUTPUT }}
           category: osv-scanner-image
 
-      - name: Upload merged SARIF to GitHub Security tab
+      - name: Upload merged SARIF as artifact
         if: ${{ always() && steps.upload_trivy.outcome == 'success' && steps.upload_osv.outcome == 'success' }}
-        uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: ${{ env.MERGED_SARIF_OUTPUT }}
-          category: merged-sca-image
+          name: merged-sca-sarif
+          path: ${{ env.MERGED_SARIF_OUTPUT }}
+          retention-days: 30
