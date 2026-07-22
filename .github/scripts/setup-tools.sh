@@ -60,12 +60,12 @@ osv-scanner --version
 echo "OSV Scanner installed OK"
 
 # Installing Semgrep via uv
-echo "[setup-tools] Bootstrapping uv ${UV_VERSION}"
-ython3 -m pip install --quiet uv=="${UV_VERSION}"
+#echo "[setup-tools] Bootstrapping uv ${UV_VERSION}"
+#ython3 -m pip install --quiet uv=="${UV_VERSION}"
 
 echo "[setup-tools] Installing Semgrep ${SEMGREP_VERSION} using uv"
 # Using --system forces uv to install semgrep globally so the CI runner can execute it directly
-sudo uv pip install --system semgrep=="${SEMGREP_VERSION}"
+sudo pip install --system semgrep=="${SEMGREP_VERSION}"
 semgrep --version
 echo "Semgrep installed OK"
 
