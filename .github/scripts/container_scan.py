@@ -74,7 +74,7 @@ def merge_sarifs():
 ## SAST
 def run_semgrep():
     cmd = [
-        "semgrep","scan",
+        "opengrep","scan",
         "--config", "p/Dockerfile",
         "--error"
     ]
