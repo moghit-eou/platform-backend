@@ -5,6 +5,7 @@ set -u          # treat unset variables as an error
 
 trap 'echo "[setup-tools] ERROR: command failed (exit $?) at line $LINENO: $BASH_COMMAND" >&2' ERR
 
+
 # Tool versions and the SHA256 of the release asset we download.
 # The "# renovate:" markers let Renovate bump version and checksum together
 # (see renovate.json). When overriding a *_VERSION via env, the matching
@@ -18,15 +19,12 @@ TRIVY_SHA256="${TRIVY_SHA256:-3cbae37cd440cd8676e5ce9207fe460b5641c7579a17e9d00f
 OSV_SCANNER_VERSION="${OSV_SCANNER_VERSION:-v2.4.0}"
 OSV_SCANNER_SHA256="${OSV_SCANNER_SHA256:-15314940c10d26af9c6649f150b8a47c1262e8fc7e17b1d1029b0e479e8ed8a0}"
 
+# renovate: datasource=github-release-attachments depName=semgrep/semgrep
+SEMGREP_VERSION="${SEMGREP_VERSION:-v1.167.0}"
+SEMGREP_SHA256="${SEMGREP_SHA256:-bd614accba811b407ae5c9ec6f1eecd3bdc29911}"
+
 # renovate: datasource=npm depName=@cyclonedx/cyclonedx-npm
 CYCLONEDX_NPM_VERSION="${CYCLONEDX_NPM_VERSION:-6.0.0}"
-
-# renovate: datasource=pypi depName=uv
-UV_VERSION="${UV_VERSION:-0.3.0}"
-
-# renovate: datasource=pypi depName=semgrep
-SEMGREP_VERSION="${SEMGREP_VERSION:-1.100.0}"
-
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
@@ -38,7 +36,7 @@ download_and_verify() {
   echo "${sha256}  ${dest}" | sha256sum -c -
 }
 
-# Installing Trivy
+# Installing Trivy from the release tarball (no install.sh piped from an unpinned branch)
 echo "[setup-tools] Installing Trivy ${TRIVY_VERSION}"
 TRIVY_TARBALL="trivy_${TRIVY_VERSION#v}_Linux-64bit.tar.gz"
 download_and_verify \
@@ -59,13 +57,13 @@ sudo install -m 0755 "${TMP_DIR}/osv-scanner" /usr/local/bin/osv-scanner
 osv-scanner --version
 echo "OSV Scanner installed OK"
 
-# Installing Semgrep via uv
-#echo "[setup-tools] Bootstrapping uv ${UV_VERSION}"
-#ython3 -m pip install --quiet uv=="${UV_VERSION}"
-
-echo "[setup-tools] Installing Semgrep ${SEMGREP_VERSION} using uv"
-# Using --system forces uv to install semgrep globally so the CI runner can execute it directly
-sudo pip install --system semgrep=="${SEMGREP_VERSION}"
+echo "[setup-tools] Installing Semgrep ${SEMGREP_VERSION}"
+SEMGREP_TARBALL="semgrep-${SEMGREP_VERSION}-ubuntu-16.04.tgz"
+download_and_verify \
+  "https://github.com/semgrep/semgrep/releases/download/${SEMGREP_VERSION}/${SEMGREP_TARBALL}" \
+  "${TMP_DIR}/${SEMGREP_TARBALL}" \
+  "${SEMGREP_SHA256}"
+sudo tar -xzf "${TMP_DIR}/${SEMGREP_TARBALL}" -C /usr/local/bin --strip-components=1 semgrep-files/semgrep
 semgrep --version
 echo "Semgrep installed OK"
 
@@ -86,7 +84,7 @@ case "$PROJECT_TYPE" in
     echo "No SBOM generation needed"
     ;;
   *)
-    echo "Unknown PROJECT_TYPE: $PROJECT_TYPE" >&2
+    echo "Unknown PROJECT_TYPE: $PROJECT_TYPE" >&2 # redirect error message to stderr
     exit 1
     ;;
 esac
