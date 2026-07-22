@@ -19,9 +19,10 @@ TRIVY_SHA256="${TRIVY_SHA256:-3cbae37cd440cd8676e5ce9207fe460b5641c7579a17e9d00f
 OSV_SCANNER_VERSION="${OSV_SCANNER_VERSION:-v2.4.0}"
 OSV_SCANNER_SHA256="${OSV_SCANNER_SHA256:-15314940c10d26af9c6649f150b8a47c1262e8fc7e17b1d1029b0e479e8ed8a0}"
 
-# renovate: datasource=github-release-attachments depName=semgrep/semgrep
-SEMGREP_VERSION="${SEMGREP_VERSION:-v1.170.0}"
-SEMGREP_SHA256="${SEMGREP_SHA256:-bd614accba811b407ae5c9ec6f1eecd3bdc29911}"
+# renovate: datasource=github-release-attachments depName=opengrep/opengrep
+OPENGREP_VERSION="${OPENGREP_VERSION:-v1.25.0}"
+OPENGREP_SHA256="${OPENGREP_SHA256:-9ac4aebb47ba3f7b0d8fc641ac8749cb6c2f253f616131a67d9631e00d4bea33}"
+
 
 # renovate: datasource=npm depName=@cyclonedx/cyclonedx-npm
 CYCLONEDX_NPM_VERSION="${CYCLONEDX_NPM_VERSION:-6.0.0}"
@@ -57,16 +58,15 @@ sudo install -m 0755 "${TMP_DIR}/osv-scanner" /usr/local/bin/osv-scanner
 osv-scanner --version
 echo "OSV Scanner installed OK"
 
-# renovate: datasource=github-tags depName=semgrep/semgrep
-echo "[setup-tools] Installing Semgrep ${SEMGREP_VERSION}"
-SEMGREP_TARBALL="semgrep-${SEMGREP_VERSION}.tar.gz"
+# Installing Opengrep
+echo "[setup-tools] Installing OpenGrep ${OPENGREP_VERSION}"
 download_and_verify \
-  "https://github.com/semgrep/semgrep/archive/refs/tags/${SEMGREP_VERSION}.tar.gz" \
-  "${TMP_DIR}/${SEMGREP_TARBALL}" \
-  "${SEMGREP_SHA256}"
-sudo tar -xzf "${TMP_DIR}/${SEMGREP_TARBALL}" -C /usr/local/bin
-semgrep --version
-echo "Semgrep installed OK"
+  "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_manylinux_x86" \
+  "${TMP_DIR}/opengrep" \
+  "${OPENGREP_SHA256}"
+sudo install -m 0755 "${TMP_DIR}/opengrep" /usr/local/bin/opengrep
+opengrep --version
+echo "OpenGrep installed OK"
 
 # Generate SBOM based on project type
 PROJECT_TYPE="${1:-none}"   # maven | npm | none
