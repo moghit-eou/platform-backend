@@ -5,7 +5,6 @@ set -u          # treat unset variables as an error
 
 trap 'echo "[setup-tools] ERROR: command failed (exit $?) at line $LINENO: $BASH_COMMAND" >&2' ERR
 
-
 # Tool versions and the SHA256 of the release asset we download.
 # The "# renovate:" markers let Renovate bump version and checksum together
 # (see renovate.json). When overriding a *_VERSION via env, the matching
@@ -22,6 +21,13 @@ OSV_SCANNER_SHA256="${OSV_SCANNER_SHA256:-15314940c10d26af9c6649f150b8a47c1262e8
 # renovate: datasource=npm depName=@cyclonedx/cyclonedx-npm
 CYCLONEDX_NPM_VERSION="${CYCLONEDX_NPM_VERSION:-6.0.0}"
 
+# renovate: datasource=pypi depName=uv
+UV_VERSION="${UV_VERSION:-0.3.0}"
+
+# renovate: datasource=pypi depName=semgrep
+SEMGREP_VERSION="${SEMGREP_VERSION:-1.100.0}"
+
+
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
@@ -32,7 +38,7 @@ download_and_verify() {
   echo "${sha256}  ${dest}" | sha256sum -c -
 }
 
-# Installing Trivy from the release tarball (no install.sh piped from an unpinned branch)
+# Installing Trivy
 echo "[setup-tools] Installing Trivy ${TRIVY_VERSION}"
 TRIVY_TARBALL="trivy_${TRIVY_VERSION#v}_Linux-64bit.tar.gz"
 download_and_verify \
@@ -53,6 +59,16 @@ sudo install -m 0755 "${TMP_DIR}/osv-scanner" /usr/local/bin/osv-scanner
 osv-scanner --version
 echo "OSV Scanner installed OK"
 
+# Installing Semgrep via uv
+#echo "[setup-tools] Bootstrapping uv ${UV_VERSION}"
+#python3 -m pip install --quiet uv=="${UV_VERSION}"
+
+echo "[setup-tools] Installing Semgrep ${SEMGREP_VERSION} using uv"
+# Using --system forces uv to install semgrep globally so the CI runner can execute it directly
+sudo uv pip install --system semgrep=="${SEMGREP_VERSION}"
+semgrep --version
+echo "Semgrep installed OK"
+
 
 # Generate SBOM based on project type
 PROJECT_TYPE="${1:-none}"   # maven | npm | none
@@ -70,7 +86,7 @@ case "$PROJECT_TYPE" in
     echo "No SBOM generation needed"
     ;;
   *)
-    echo "Unknown PROJECT_TYPE: $PROJECT_TYPE" >&2 # redirect error message to stderr
+    echo "Unknown PROJECT_TYPE: $PROJECT_TYPE" >&2
     exit 1
     ;;
 esac

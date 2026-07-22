@@ -1,6 +1,7 @@
-name: SCA CI - image
+name: Container Scanning
 
 on:
+  push: # To be removed after testing 
   pull_request:
   workflow_dispatch:
   schedule:
@@ -35,9 +36,12 @@ jobs:
 
       - name: Setup tools
         run: bash .github/scripts/setup-tools.sh
+      
+      - name: Run SAST scanning
+        run: python .github/scripts/container_scan.py --scan-type sast
 
-      - name: Run SCA tools
-        run: python .github/scripts/run_sca_image.py
+      - name: Run SCA scanning
+        run: python .github/scripts/container_scan.py --scan-type sca --image ${{ env.IMAGE_NAME }}
 
       - name: Upload Trivy SARIF to GitHub Security tab
         id: upload_trivy
