@@ -26,6 +26,7 @@ OSV_IGNOREFILE = os.getenv("OSV_IGNOREFILE", ".github/scripts/suppress_osv_scann
 TRIVY_SARIF_OUTPUT = os.getenv("TRIVY_SARIF_OUTPUT", "trivy-image.sarif")
 OSV_SARIF_OUTPUT = os.getenv("OSV_SARIF_OUTPUT", "osv-scanner-image.sarif")
 MERGED_SARIF_OUTPUT = os.getenv("MERGED_SARIF_OUTPUT", "merged-SCA-platform-backend-image.sarif")
+OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "opengrep-sast.sarif")
 
 # --- Functions to run each SCA tool and handle their outputs
 def run_trivy():
@@ -74,9 +75,11 @@ def merge_sarifs():
 ## SAST
 def run_semgrep():
     cmd = [
-        "opengrep","scan",
+        "opengrep", "scan",
         "--config", "p/Dockerfile",
-        "--error"
+        "--error",
+        "--sarif",
+        "--output", OPENGREP_SARIF_OUTPUT,
     ]
     exit_code = subprocess.run(cmd).returncode
     return exit_code
