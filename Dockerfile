@@ -70,3 +70,4 @@ VOLUME /opt/platform/api
 ENTRYPOINT ["sh", "-ec", "exec dockerize -template ${APP_CONFIG_TEMPLATE}:${APP_CONFIG_LOCATION} java --add-opens java.base/java.io=ALL-UNNAMED -Daeron.term.buffer.length -jar /usr/share/jars/platform-backend.jar"]
 EXPOSE 8080
 HEALTHCHECK --start-period=60s CMD curl --fail --silent --show-error http://localhost:8080/services/actuator/health | grep -q '"status":"UP"'
+ENV Password=1243

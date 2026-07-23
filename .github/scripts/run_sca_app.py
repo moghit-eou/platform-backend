@@ -27,7 +27,7 @@ MERGED_SARIF_OUTPUT = os.getenv("MERGED_SARIF_OUTPUT", "merged-SCA-platform-back
 
 def run_trivy():
     cmd = [
-        "trivy", "sbom",
+        "trivy", "sbom", "-q",
         SBOM_PATH,
         "--format", "sarif",
         "--ignorefile", TRIVY_IGNOREFILE,
@@ -37,7 +37,7 @@ def run_trivy():
 
 def run_osv_scanner():
     cmd = [
-        "osv-scanner", "scan", "source",
+        "osv-scanner", "scan", "source", 
         "--lockfile", SBOM_PATH,
         "--config", OSV_IGNOREFILE,
         "--format", "sarif",

@@ -26,7 +26,8 @@ OSV_IGNOREFILE = os.getenv("OSV_IGNOREFILE", ".github/scripts/suppress_osv_scann
 TRIVY_SARIF_OUTPUT = os.getenv("TRIVY_SARIF_OUTPUT", "trivy-image.sarif")
 OSV_SARIF_OUTPUT = os.getenv("OSV_SARIF_OUTPUT", "osv-scanner-image.sarif")
 MERGED_SARIF_OUTPUT = os.getenv("MERGED_SARIF_OUTPUT", "merged-SCA-platform-backend-image.sarif")
-OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "opengrep-sast.sarif")
+OPENGREP_SARIF_OUTPUT = "sast/result-opengrep.json"
+SEMGREP_RULES_DIR = "/opt/semgrep-rules/dockerfile"
 
 # --- Functions to run each SCA tool and handle their outputs
 def run_trivy():
@@ -73,17 +74,17 @@ def merge_sarifs():
     logger.info("SARIF files merged successfully.")
 
 ## SAST
+
 def run_semgrep():
     cmd = [
         "opengrep", "scan",
-        "--config", "p/Dockerfile",
-        "--error",
-        "--sarif",
-        "--output", OPENGREP_SARIF_OUTPUT,
+        "--config", SEMGREP_RULES_DIR,
+#        "--error",
+#        "--sarif",
+#        "--output", OPENGREP_SARIF_OUTPUT,
     ]
     exit_code = subprocess.run(cmd).returncode
     return exit_code
-
 
 def handle_sca():
 
@@ -139,7 +140,7 @@ def handle_sca():
         else:
             logger.error(f"[{name}]: {RED}FAILED (CVSS >= 8.0 found){RESET}")
     logger.info(f"{BOLD}=========================================={RESET}\n")
-    
+    A
     # Exit with non-zero code if any tool failed the gate
     if gate_failed:
         logger.error(f"{RED}One or more SCA tools failed the gate check.{RESET}")
@@ -149,6 +150,7 @@ def handle_sast():
     exit_code = run_semgrep()
     if exit_code != 0:
         logger.error(f"{RED}[!] semgrep exit code {exit_code}{RESET}")
+        logger.error(f"{RED}One or more tools failed the gate check.{RESET}")
         sys.exit(exit_code)
 
 

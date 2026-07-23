@@ -22,6 +22,8 @@ OSV_SCANNER_SHA256="${OSV_SCANNER_SHA256:-15314940c10d26af9c6649f150b8a47c1262e8
 # renovate: datasource=github-release-attachments depName=opengrep/opengrep
 OPENGREP_VERSION="${OPENGREP_VERSION:-v1.25.0}"
 OPENGREP_SHA256="${OPENGREP_SHA256:-9ac4aebb47ba3f7b0d8fc641ac8749cb6c2f253f616131a67d9631e00d4bea33}"
+SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-bf362e1642cc2a16ca44bcae0fdda78639e383c3}"
+SEMGREP_RULES_DIR="/opt/semgrep-rules"
 
 
 # renovate: datasource=npm depName=@cyclonedx/cyclonedx-npm
@@ -67,6 +69,14 @@ download_and_verify \
 sudo install -m 0755 "${TMP_DIR}/opengrep" /usr/local/bin/opengrep
 opengrep --version
 echo "OpenGrep installed OK"
+
+# Downloading Dockerfile rulset
+echo "[setup-tools] Cloning semgrep-rules @ ${SEMGREP_RULES_REF}"
+sudo rm -rf "${SEMGREP_RULES_DIR}"
+sudo git clone --quiet https://github.com/semgrep/semgrep-rules.git "${SEMGREP_RULES_DIR}"
+sudo git -C "${SEMGREP_RULES_DIR}" checkout --quiet "${SEMGREP_RULES_REF}"
+echo "semgrep-rules ready at ${SEMGREP_RULES_DIR} (ref: ${SEMGREP_RULES_REF})"
+
 
 # Generate SBOM based on project type
 PROJECT_TYPE="${1:-none}"   # maven | npm | none
