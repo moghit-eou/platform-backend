@@ -1,49 +1,51 @@
-# Name of this GitHub Actions workflow.
-name: Semgrep
+name: Static Application Security Testing (SAST)
 
 on:
-  pull_request: {}
-  workflow_dispatch: {}
+  push: # To be removed after testing
+  pull_request:
+  workflow_dispatch:
 
 jobs:
-  semgrep_scan:
-    # User definable name of this GitHub Actions job.
-    name: semgrep/ci
-    # If you are self-hosting, change the following `runs-on` value:
+  sast:
+    name: Static Application Security Testing
     runs-on: ubuntu-latest
-    container:
-      # A Docker image with Semgrep installed. Do not change this.
-      image: returntocorp/semgrep
-    # Skip any PR created by dependabot to avoid permission issues:
-    if: (github.actor != 'dependabot[bot]')
     permissions:
-      # required for all workflows
-      security-events: write
-      # only required for workflows in private repositories
-      actions: read
       contents: read
+      security-events: write # required for uploading SAST results to github security
+    env:
+      SEMGREP_CONFIGS: "p/security-audit p/owasp-top-ten p/cwe-top-25 p/trailofbits p/java"
+      SEMGREP_EXCLUDE: ".github Dockerfile* target/** dist/** build/** node_modules/** .angular/**"
+      SEMGREP_SARIF_OUTPUT: sast-semgrep-app.sarif
+      SAST_SEVERITY: ERROR
+      SAST_ENFORCE: "false"
 
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - name: Perform Semgrep Analysis
-      # @NOTE: This is the actual semgrep command to scan your code.
-      # Modify the --config option to 'r/all' to scan using all rules,
-      # or use multiple flags to specify particular rules, such as
-      # --config r/all --config custom/rules
-        run: semgrep scan -q --sarif --config auto > semgrep-results.sarif
-
-      # upload the results for the CodeQL GitHub app to annotate the code
-      - name: Save SARIF results as artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 #v6.2.0
         with:
-          name: semgrep-scan-results
-          path: semgrep-results.sarif
+          python-version: '3.14.4'
 
-      # Upload SARIF file generated in previous step
-      - name: Upload SARIF result to the GitHub Security Dashboard
+      - name: Setup tools
+        run: bash .github/scripts/setup-tools.sh --install-tool opengrep
+
+      - name: Run SAST scanning
+        run: python .github/scripts/sast_scan.py
+
+      - name: Upload Semgrep SARIF to GitHub Security tab
+        id: upload_semgrep
+        if: always()
         uses: github/codeql-action/upload-sarif@c35d1b164463ee62a100735382aaaa525c5d3496 #v2.25.6
         with:
-          sarif_file: semgrep-results.sarif
-        if: always()
+          sarif_file: ${{ env.SEMGREP_SARIF_OUTPUT }}
+          category: semgrep-app
+
+      - name: Upload SARIF artifact
+        if: ${{ always() && steps.upload_semgrep.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: sast-scan-sarif-report
+          path: ${{ env.SEMGREP_SARIF_OUTPUT }}
+          retention-days: 30

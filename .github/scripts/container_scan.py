@@ -127,7 +127,6 @@ def run_hadolint():
 
     return result.returncode
 
-
 def run_semgrep():
     cmd = [
         "opengrep",  "scan",
