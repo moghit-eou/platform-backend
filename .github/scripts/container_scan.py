@@ -140,7 +140,7 @@ def handle_sca():
         else:
             logger.error(f"[{name}]: {RED}FAILED (CVSS >= 8.0 found){RESET}")
     logger.info(f"{BOLD}=========================================={RESET}\n")
-    A
+
     # Exit with non-zero code if any tool failed the gate
     if gate_failed:
         logger.error(f"{RED}One or more SCA tools failed the gate check.{RESET}")
@@ -184,8 +184,8 @@ def main():
     args = parser.parse_args()
     
     # Input Validation Gate
-    if args.scan_type == "sca" and not args.image:
-        parser.error("The -i / --image flag is strictly required when running the SCA target.")
+    #if args.scan_type == "sca" and not args.image:
+    #    parser.error("The -i / --image flag is strictly required when running the SCA target.")
 
     # Execution Routing
     if args.scan_type == "sast":
