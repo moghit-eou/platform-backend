@@ -202,7 +202,6 @@ def main():
     parser.add_argument(
         "-s", "--scan-type",
         choices=["sast", "sca"],
-        required=True,
         help="Specify the security methodology to execute (e.g., sast, sca)"
     )
 
