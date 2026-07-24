@@ -154,13 +154,14 @@ def run_hadolint():
 
 def run_semgrep():
     cmd = [
-        "opengrep", "scan",
-        "--config", "p/dockerfile",
-        "--config", SEMGREP_RULES_DIR,
+        "opengrep",  "scan",
+        "--config",  "p/dockerfile",
+        "--config",   SEMGREP_RULES_DIR,
+        "--include", "Dockerfile",
         "--severity=ERROR",
         "--error",
         "--sarif",
-        "--output", OPENGREP_SAST_SARIF_OUTPUT,
+        "--output",  OPENGREP_SAST_SARIF_OUTPUT,
     ]
     return subprocess.run(cmd).returncode
 
