@@ -41,7 +41,7 @@ def run_trivy():
         IMAGE_NAME,
         "--format", "sarif",
         "--ignorefile", TRIVY_IGNOREFILE,
-        "--output", TRIVY_SARIF_OUTPUT
+        "--output", TRIVY_SCA_SARIF_OUTPUT
     ]
     return subprocess.run(cmd).returncode
 
@@ -51,7 +51,7 @@ def run_osv_scanner():
         IMAGE_NAME,
         "--config", OSV_IGNOREFILE,
         "--format", "sarif",
-        "--output-file", OSV_SARIF_OUTPUT
+        "--output-file", OSV_SCA_SARIF_OUTPUT
     ]
     exit_code = subprocess.run(cmd).returncode
     if exit_code == 1:
@@ -73,7 +73,7 @@ def merge_sarifs():
             sarif = json.load(f, strict=False)
         merged["runs"].extend(sarif.get("runs", []))
 
-    with open(MERGED_SARIF_OUTPUT, "w") as f:
+    with open(SCA_MERGED_SARIF_OUTPUT, "w") as f:
         json.dump(merged, f)
 
     logger.info("SARIF files merged successfully.")
