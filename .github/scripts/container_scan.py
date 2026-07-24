@@ -226,11 +226,11 @@ def main():
     args = parser.parse_args()
 
     if args.scan_type == "sast":
-        logger.info(f"{BOLD}Initiating SAST pipeline{RESET}")
+        logger.info(f"{BOLD}Initiating SAST pipeline: {RESET}")
         handle_sast()
     # Execution 
     elif args.scan_type == "sca":
-        logger.info(f"{BOLD}Initiating SCA pipeline on image: {args.image}{RESET}")
+        logger.info(f"{BOLD}Initiating SCA pipeline on {args.image}{RESET}")
         global IMAGE_NAME
         if args.image:               # Override the global IMAGE_NAME
             IMAGE_NAME = args.image 

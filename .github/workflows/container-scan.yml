@@ -84,6 +84,7 @@ jobs:
           category: hadolint-sast
 
       - name: Merge all SARIF reports
+        if: always()
         run: |
           python3 .github/scripts/container_scan.py \
             --merge-sarif "${{ env.TRIVY_SCA_SARIF_OUTPUT }}" "${{ env.OSV_SCA_SARIF_OUTPUT }}" "${{ env.OPENGREP_SAST_SARIF_OUTPUT }}" "${{ env.HADOLINT_SAST_SARIF_OUTPUT }}" \
