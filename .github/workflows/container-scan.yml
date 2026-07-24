@@ -16,7 +16,7 @@ jobs:
       security-events: write # required for uploading SCA results to github security
     env:
       IMAGE_NAME: platform-backend:testing
-      CONTAINER_SCAN_MERGED_SARIF_OUTPUT: container-scan-merged.sarif
+      CONTAINER_SCAN_MERGED_SARIF_OUTPUT: container-scan-platform-backend-merged.sarif
 
       # SCA / CVE
       TRIVY_IGNOREFILE: .github/scripts/suppress_trivy.yaml
@@ -45,11 +45,11 @@ jobs:
         run: bash .github/scripts/setup-tools.sh
       
       - name: Run SAST scanning
-        run: python3 .github/scripts/container_scan.py --scan-type sast
+        run: python .github/scripts/container_scan.py --scan-type sast
 
       - name: Run SCA scanning
         if: always()
-        run: python3 .github/scripts/container_scan.py --scan-type sca --image ${{ env.IMAGE_NAME }}
+        run: python .github/scripts/container_scan.py --scan-type sca --image ${{ env.IMAGE_NAME }}
 
       - name: Upload Trivy SARIF to GitHub Security tab
         id: upload_trivy
@@ -86,7 +86,7 @@ jobs:
       - name: Merge all SARIF reports
         if: always()
         run: |
-          python3 .github/scripts/container_scan.py \
+          python .github/scripts/container_scan.py \
             --merge-sarif "${{ env.TRIVY_SCA_SARIF_OUTPUT }}" "${{ env.OSV_SCA_SARIF_OUTPUT }}" "${{ env.OPENGREP_SAST_SARIF_OUTPUT }}" "${{ env.HADOLINT_SAST_SARIF_OUTPUT }}" \
             --merge-output "${{ env.CONTAINER_SCAN_MERGED_SARIF_OUTPUT }}"
 
