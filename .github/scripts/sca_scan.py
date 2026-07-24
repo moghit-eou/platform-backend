@@ -27,8 +27,7 @@ MERGED_SARIF_OUTPUT = os.getenv("MERGED_SARIF_OUTPUT", "SCA-platform-backend-mer
 
 def run_trivy():
     cmd = [
-        "trivy", "sbom", "-q",
-        SBOM_PATH,
+        "trivy", "sbom", SBOM_PATH,
         "--format", "sarif",
         "--ignorefile", TRIVY_IGNOREFILE,
         "--output", TRIVY_SARIF_OUTPUT
