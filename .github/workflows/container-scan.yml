@@ -16,12 +16,17 @@ jobs:
       security-events: write # required for uploading SCA results to github security
     env:
       IMAGE_NAME: platform-backend:testing
+
+      # SCA / CVE
       TRIVY_IGNOREFILE: .github/scripts/suppress_trivy.yaml
       OSV_IGNOREFILE: .github/scripts/suppress_osv_scanner.toml
-      TRIVY_SARIF_OUTPUT: trivy-image.sarif
-      OSV_SARIF_OUTPUT: osv-scanner-image.sarif
-      OPENGREP_SARIF_OUTPUT: opengrep-sast-container.sarif
-      MERGED_SARIF_OUTPUT: merged-SCA-platform-backend-image.sarif
+      TRIVY_SCA_SARIF_OUTPUT: sca-trivy-container.sarif
+      OSV_SCA_SARIF_OUTPUT: sca-osv-container.sarif
+      SCA_MERGED_SARIF_OUTPUT: sca-merged-container.sarif
+
+      # SAST /Linting
+      OPENGREP_SAST_SARIF_OUTPUT: sast-opengrep-dockerfile.sarif
+      HADOLINT_SAST_SARIF_OUTPUT: sast-hadolint-dockerfile.sarif
     
     steps:
       - name: Check out repository

@@ -21,13 +21,18 @@ logger = logging.getLogger("sca-orchestrator")
 
 # --- Configurable values
 IMAGE_NAME = os.getenv("IMAGE_NAME", "platform-backend:local")
+
+# --- SCA / CVE (Trivy + OSV) ---
 TRIVY_IGNOREFILE = os.getenv("TRIVY_IGNOREFILE", ".github/scripts/suppress_trivy.yaml")
 OSV_IGNOREFILE = os.getenv("OSV_IGNOREFILE", ".github/scripts/suppress_osv_scanner.toml")
-TRIVY_SARIF_OUTPUT = os.getenv("TRIVY_SARIF_OUTPUT", "trivy-image.sarif")
-OSV_SARIF_OUTPUT = os.getenv("OSV_SARIF_OUTPUT", "osv-scanner-image.sarif")
-MERGED_SARIF_OUTPUT = os.getenv("MERGED_SARIF_OUTPUT", "merged-SCA-platform-backend-image.sarif")
-OPENGREP_SARIF_OUTPUT = "sast/result-opengrep.json"
-SEMGREP_RULES_DIR = "/opt/semgrep-rules/dockerfile"
+TRIVY_SCA_SARIF_OUTPUT = os.getenv("TRIVY_SCA_SARIF_OUTPUT", "sca-trivy-container.sarif")
+OSV_SCA_SARIF_OUTPUT = os.getenv("OSV_SCA_SARIF_OUTPUT", "sca-osv-container.sarif")
+SCA_MERGED_SARIF_OUTPUT = os.getenv("SCA_MERGED_SARIF_OUTPUT", "sca-merged-container.sarif")
+
+# --- SAST/Code Linting (OpenGrep + Hadolint) ---
+SEMGREP_RULES_DIR = os.getenv("SEMGREP_RULES_DIR", "/opt/semgrep-rules/dockerfile")
+OPENGREP_SAST_SARIF_OUTPUT = os.getenv("OPENGREP_SAST_SARIF_OUTPUT", "sast-opengrep-dockerfile.sarif")
+HADOLINT_SAST_SARIF_OUTPUT = os.getenv("HADOLINT_SAST_SARIF_OUTPUT", "sast-hadolint-dockerfile.sarif")
 
 # --- Functions to run each SCA tool and handle their outputs
 def run_trivy():
@@ -72,19 +77,6 @@ def merge_sarifs():
         json.dump(merged, f)
 
     logger.info("SARIF files merged successfully.")
-
-## SAST
-
-def run_semgrep():
-    cmd = [
-        "opengrep", "scan",
-        "--config", SEMGREP_RULES_DIR,
-#        "--error",
-#        "--sarif",
-#        "--output", OPENGREP_SARIF_OUTPUT,
-    ]
-    exit_code = subprocess.run(cmd).returncode
-    return exit_code
 
 def handle_sca():
 
@@ -146,18 +138,61 @@ def handle_sca():
         logger.error(f"{RED}One or more SCA tools failed the gate check.{RESET}")
         sys.exit(1)
 
+
+## SAST
+def run_hadolint():
+    cmd = [
+        "hadolint", "Dockerfile",
+        "--failure-threshold", "error",
+        "--format", "sarif",
+    ]
+    with open(HADOLINT_SARIF_OUTPUT, "w") as f:
+        result = subprocess.run(cmd, stdout=f)
+
+    return result.returncode
+
+
+def run_semgrep():
+    cmd = [
+        "opengrep", "scan",
+        "--config", "p/dockerfile",
+        "--config", SEMGREP_RULES_DIR,
+        "--severity=ERROR",
+        "--error",
+        "--sarif",
+        "--output", OPENGREP_SARIF_OUTPUT,
+    ]
+    return subprocess.run(cmd).returncode
+
 def handle_sast():
-    exit_code = run_semgrep()
-    if exit_code != 0:
-        logger.error(f"{RED}[!] semgrep exit code {exit_code}{RESET}")
+    failed = False
+
+    hadolint_exit = run_hadolint()
+    semgrep_exit = run_semgrep()
+    
+    if hadolint_exit != 0:
+        logger.error(f"{RED}[!] hadolint exit code {hadolint_exit}{RESET}")
+        failed = True
+    else:
+        logger.info(f"{GREEN}[✓] hadolint exit code {hadolint_exit}{RESET}")
+
+    if semgrep_exit != 0:
+        logger.error(f"{RED}[!] semgrep exit code {semgrep_exit}{RESET}")
+        failed = True
+    else:
+        logger.info(f"{GREEN}[✓] semgrep exit code {semgrep_exit}{RESET}")
+        
+    if failed:
         logger.error(f"{RED}One or more tools failed the gate check.{RESET}")
-        sys.exit(exit_code)
+        sys.exit(1)
+
+    logger.info(f"{BOLD}SAST gate passed.{RESET}")
 
 
 def main():
     parser = argparse.ArgumentParser(
         prog="sec-orchestrator",
-        description="Agnostic DevSecOps Pipeline Orchestrator (SAST & SCA)"
+        description="Agnostic DevSecOps Container scannning Pipeline Orchestrator"
     )
     
     # The primary router
@@ -168,13 +203,6 @@ def main():
         help="Specify the security methodology to execute (e.g., sast, sca)"
     )
 
-    # Workspace flag for code scanning
-    parser.add_argument(
-        "-w", "--workspace",
-        default=".",
-        help="Target source code directory to scan (default: current directory)"
-    )
-
     # Image flag specifically SCA approach
     parser.add_argument(
         "-i", "--image",
@@ -182,21 +210,16 @@ def main():
     )
     
     args = parser.parse_args()
-    
-    # Input Validation Gate
-    #if args.scan_type == "sca" and not args.image:
-    #    parser.error("The -i / --image flag is strictly required when running the SCA target.")
 
-    # Execution Routing
     if args.scan_type == "sast":
-        logger.info(f"{BOLD}Initiating SAST pipeline on workspace: {args.workspace}{RESET}")
+        logger.info(f"{BOLD}Initiating SAST pipeline{RESET}")
         handle_sast()
-        
+    # Execution 
     elif args.scan_type == "sca":
         logger.info(f"{BOLD}Initiating SCA pipeline on image: {args.image}{RESET}")
-        # Override the global IMAGE_NAME
         global IMAGE_NAME
-        IMAGE_NAME = args.image
+        if args.image:               # Override the global IMAGE_NAME
+            IMAGE_NAME = args.image 
         handle_sca()
 
 if __name__ == "__main__":
