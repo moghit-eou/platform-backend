@@ -25,6 +25,9 @@ OPENGREP_SHA256="${OPENGREP_SHA256:-9ac4aebb47ba3f7b0d8fc641ac8749cb6c2f253f6161
 SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-bf362e1642cc2a16ca44bcae0fdda78639e383c3}"
 SEMGREP_RULES_DIR="/opt/semgrep-rules"
 
+# renovate: datasource=github-release-attachments depName=hadolint/hadolint
+HADOLINT_VERSION="${HADOLINT_VERSION:-v2.14.0}"
+HADOLINT_SHA256="${HADOLINT_SHA256:-6bf226944684f56c84dd014e8b979d27425c0148f61b3bd99bcc6f39e9dc5a47}"
 
 # renovate: datasource=npm depName=@cyclonedx/cyclonedx-npm
 CYCLONEDX_NPM_VERSION="${CYCLONEDX_NPM_VERSION:-6.0.0}"
@@ -76,6 +79,16 @@ sudo rm -rf "${SEMGREP_RULES_DIR}"
 sudo git clone --quiet https://github.com/semgrep/semgrep-rules.git "${SEMGREP_RULES_DIR}"
 sudo git -C "${SEMGREP_RULES_DIR}" checkout --quiet "${SEMGREP_RULES_REF}"
 echo "semgrep-rules ready at ${SEMGREP_RULES_DIR} (ref: ${SEMGREP_RULES_REF})"
+
+
+echo "[setup-tools] Installing Hadolint ${HADOLINT_VERSION}"
+download_and_verify \
+  "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64" \
+  "${TMP_DIR}/hadolint" \
+  "${HADOLINT_SHA256}"
+sudo install -m 0755 "${TMP_DIR}/hadolint" /usr/local/bin/hadolint
+hadolint --version
+echo "Hadolint installed OK"
 
 
 # Generate SBOM based on project type
