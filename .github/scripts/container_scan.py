@@ -58,26 +58,6 @@ def run_osv_scanner():
         return 0  # OSV Scanner returns 1 if vulnerabilities are found, but we want to continue the pipeline
     return exit_code
 
-def merge_sarifs():
-    merged = {
-        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
-        "version": "2.1.0",
-        "runs": [],
-    }
-
-    for path in (TRIVY_SCA_SARIF_OUTPUT, OSV_SCA_SARIF_OUTPUT):
-        if not os.path.exists(path):
-            logger.warning(f"{path} not found, skipping in merge")
-            continue
-        with open(path) as f:
-            sarif = json.load(f, strict=False)
-        merged["runs"].extend(sarif.get("runs", []))
-
-    with open(SCA_MERGED_SARIF_OUTPUT, "w") as f:
-        json.dump(merged, f)
-
-    logger.info("SARIF files merged successfully.")
-
 def handle_sca():
 
     tools = {"trivy": run_trivy, "osv-scanner": run_osv_scanner}
@@ -95,10 +75,7 @@ def handle_sca():
             logger.error(f"{RED}[!] {name} exit code {exit_code} but wrote {path}{RESET}")
             tool_status[name] = "ERROR"
             gate_failed = True
- 
-
-    merge_sarifs()  # combined artifact only, not used for the gate decision
-    
+     
     # Evaluate each SARIF file for gate decision
     for name, path in sarif_files.items():
         if name in tool_status:
@@ -195,6 +172,25 @@ def handle_sast():
     if any(status != "PASSED" for status in tool_status.values()):
         sys.exit(1)
 
+def merge_sarifs():
+    merged = {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [],
+    }
+
+    for path in (TRIVY_SCA_SARIF_OUTPUT, OSV_SCA_SARIF_OUTPUT):
+        if not os.path.exists(path):
+            logger.warning(f"{path} not found, skipping in merge")
+            continue
+        with open(path) as f:
+            sarif = json.load(f, strict=False)
+        merged["runs"].extend(sarif.get("runs", []))
+
+    with open(SCA_MERGED_SARIF_OUTPUT, "w") as f:
+        json.dump(merged, f)
+
+    logger.info("SARIF files merged successfully.")
 
 def main():
     parser = argparse.ArgumentParser(
