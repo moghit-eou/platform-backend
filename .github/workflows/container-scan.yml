@@ -23,7 +23,6 @@ jobs:
       OSV_IGNOREFILE: .github/scripts/suppress_osv_scanner.toml
       TRIVY_SCA_SARIF_OUTPUT: sca-trivy-container.sarif
       OSV_SCA_SARIF_OUTPUT: sca-osv-container.sarif
-      SCA_MERGED_SARIF_OUTPUT: sca-merged-container.sarif
 
       # SAST /Linting
       OPENGREP_SAST_SARIF_OUTPUT: sast-opengrep-dockerfile.sarif
