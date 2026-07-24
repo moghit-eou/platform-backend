@@ -65,7 +65,7 @@ def merge_sarifs():
         "runs": [],
     }
 
-    for path in (TRIVY_SARIF_OUTPUT, OSV_SARIF_OUTPUT):
+    for path in (TRIVY_SCA_SARIF_OUTPUT, OSV_SCA_SARIF_OUTPUT):
         if not os.path.exists(path):
             logger.warning(f"{path} not found, skipping in merge")
             continue
@@ -81,7 +81,7 @@ def merge_sarifs():
 def handle_sca():
 
     tools = {"trivy": run_trivy, "osv-scanner": run_osv_scanner}
-    sarif_files = {"trivy": TRIVY_SARIF_OUTPUT, "osv-scanner": OSV_SARIF_OUTPUT}
+    sarif_files = {"trivy": TRIVY_SCA_SARIF_OUTPUT, "osv-scanner": OSV_SCA_SARIF_OUTPUT}
     tool_status = {}   # "PASSED" | "WARNING" | "FAILED" | "ERROR"
     gate_failed = False
     

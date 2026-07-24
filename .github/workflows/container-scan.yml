@@ -1,4 +1,4 @@
-name: Container Scanning
+name: Container Vulnerability Scanning
 
 on:
   push: # To be removed after testing 
@@ -9,7 +9,7 @@ on:
     
 jobs:
   sca:
-    name: Software Composition Analysis
+    name: Container Vulnerability Scanning
     runs-on: ubuntu-latest
     permissions:
       contents: read
