@@ -37,17 +37,17 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
 # --- Flag parsing -----------------------------------------------------
-TOOLS="all"
-SBOM_TARGET="none"
+INSTALL_TOOL="all"
+SBOM_ECOSYSTEM="none"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --tools)
-      TOOLS="$2"
+    --install-tool)
+      INSTALL_TOOL="$2"
       shift 2
       ;;
-    --sbom-target)
-      SBOM_TARGET="$2"
+    --sbom-ecosystem)
+      SBOM_ECOSYSTEM="$2"
       shift 2
       ;;
     *)
@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 should_install() {
-  [[ "$TOOLS" == "all" || ",$TOOLS," == *",$1,"* ]]
+  [[ "$INSTALL_TOOL" == "all" || ",$INSTALL_TOOL," == *",$1,"* ]]
 }
 
 # Download a file and refuse to proceed unless its SHA256 matches the pinned one
@@ -127,7 +127,7 @@ if should_install "hadolint"; then
 fi
 
 # --- SBOM generation ----------------------------------------------------
-case "$SBOM_TARGET" in
+case "$SBOM_ECOSYSTEM" in
   maven)
     echo "Generating SBOM for Maven project"
     mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom -q
@@ -140,7 +140,7 @@ case "$SBOM_TARGET" in
     echo "No SBOM generation needed"
     ;;
   *)
-    echo "Unknown SBOM_TARGET: $SBOM_TARGET" >&2
+    echo "Unknown SBOM_ECOSYSTEM: $SBOM_ECOSYSTEM" >&2
     exit 1
     ;;
 esac

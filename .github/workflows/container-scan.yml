@@ -44,9 +44,8 @@ jobs:
       - name: Setup tools
         run: |
           bash .github/scripts/setup-tools.sh \
-            --tools trivy,osv-scanner,opengrep,hadolint,semgrep-rules \
-            --sbom-target maven
-      
+          --install-tool trivy,osv-scanner,opengrep,hadolint,semgrep-rules 
+
       - name: Run SAST scanning
         run: python .github/scripts/container_scan.py --scan-type sast
 
