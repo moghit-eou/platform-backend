@@ -172,14 +172,14 @@ def handle_sast():
     if any(status != "PASSED" for status in tool_status.values()):
         sys.exit(1)
 
-def merge_sarifs():
+def merge_sarifs(sarif_paths, output_path):
     merged = {
         "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
         "version": "2.1.0",
         "runs": [],
     }
 
-    for path in (TRIVY_SCA_SARIF_OUTPUT, OSV_SCA_SARIF_OUTPUT):
+    for path in sarif_paths:
         if not os.path.exists(path):
             logger.warning(f"{path} not found, skipping in merge")
             continue
@@ -187,10 +187,10 @@ def merge_sarifs():
             sarif = json.load(f, strict=False)
         merged["runs"].extend(sarif.get("runs", []))
 
-    with open(SCA_MERGED_SARIF_OUTPUT, "w") as f:
+    with open(output_path, "w") as f:
         json.dump(merged, f)
 
-    logger.info("SARIF files merged successfully.")
+    logger.info(f"SARIF files merged successfully into {output_path}")
 
 def main():
     parser = argparse.ArgumentParser(
@@ -212,6 +212,18 @@ def main():
         help="Target Docker image reference"
     )
     
+    parser.add_argument(
+    "--merge-sarif",
+    nargs="+",
+    metavar="SARIF_FILE",
+    help="List of SARIF files to merge into one report"
+    )
+
+    parser.add_argument(
+        "--merge-output",
+        default="merged-container-scan.sarif",
+        help="Output path for the merged SARIF file"
+    )
     args = parser.parse_args()
 
     if args.scan_type == "sast":
@@ -224,6 +236,10 @@ def main():
         if args.image:               # Override the global IMAGE_NAME
             IMAGE_NAME = args.image 
         handle_sca()
+    
+    if args.merge_sarif:
+        merge_sarifs(args.merge_sarif, args.merge_output)
+        return
 
 if __name__ == "__main__":
     main()
