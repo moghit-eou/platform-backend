@@ -146,7 +146,7 @@ def run_hadolint():
         "--failure-threshold", "error",
         "--format", "sarif",
     ]
-    with open(HADOLINT_SARIF_OUTPUT, "w") as f:
+    with open(HADOLINT_SAST_SARIF_OUTPUT, "w") as f:
         result = subprocess.run(cmd, stdout=f)
 
     return result.returncode
@@ -160,33 +160,39 @@ def run_semgrep():
         "--severity=ERROR",
         "--error",
         "--sarif",
-        "--output", OPENGREP_SARIF_OUTPUT,
+        "--output", OPENGREP_SAST_SARIF_OUTPUT,
     ]
     return subprocess.run(cmd).returncode
 
 def handle_sast():
-    failed = False
+    tools = {
+        "hadolint": run_hadolint,
+        "semgrep": run_semgrep,
+    }
 
-    hadolint_exit = run_hadolint()
-    semgrep_exit = run_semgrep()
-    
-    if hadolint_exit != 0:
-        logger.error(f"{RED}[!] hadolint exit code {hadolint_exit}{RESET}")
-        failed = True
-    else:
-        logger.info(f"{GREEN}[✓] hadolint exit code {hadolint_exit}{RESET}")
+    tool_status = {}
 
-    if semgrep_exit != 0:
-        logger.error(f"{RED}[!] semgrep exit code {semgrep_exit}{RESET}")
-        failed = True
-    else:
-        logger.info(f"{GREEN}[✓] semgrep exit code {semgrep_exit}{RESET}")
-        
-    if failed:
-        logger.error(f"{RED}One or more tools failed the gate check.{RESET}")
+    for name, run_fn in tools.items():
+        exit_code = run_fn()
+        if exit_code == 0:
+            tool_status[name] = "PASSED"
+        elif exit_code == 1:
+            tool_status[name] = "FAILED"
+        else:
+            tool_status[name] = "ERROR"
+
+    logger.info(f"\n{BOLD}========== SAST PIPELINE SUMMARY =========={RESET}")
+    for name, status in tool_status.items():
+        if status == "PASSED":
+            logger.info(f"[{name}]: {GREEN}PASSED (exit code 0){RESET}")
+        elif status == "FAILED":
+            logger.error(f"[{name}]: {RED}FAILED (exit code 1 - error-severity findings){RESET}")
+        else:
+            logger.error(f"[{name}]: {RED}ERROR (exit code {exit_code}, tool did not run correctly){RESET}")
+    logger.info(f"{BOLD}==========================================={RESET}\n")
+
+    if any(status != "PASSED" for status in tool_status.values()):
         sys.exit(1)
-
-    logger.info(f"{BOLD}SAST gate passed.{RESET}")
 
 
 def main():
