@@ -17,7 +17,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(message)s'  # Clean format to prevent double-timestamps in CI logs
 )
-logger = logging.getLogger("sca-orchestrator")
+logger = logging.getLogger("container-scan-orchestrator")
 
 # --- Configurable values
 IMAGE_NAME = os.getenv("IMAGE_NAME", "platform-backend:local")
@@ -116,7 +116,7 @@ def handle_sca():
         sys.exit(1)
 
 
-## SAST
+# --- Functions to run each SAST tool and handle their outputs
 def run_hadolint():
     cmd = [
         "hadolint", "Dockerfile",

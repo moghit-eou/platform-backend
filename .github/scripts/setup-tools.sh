@@ -5,7 +5,6 @@ set -u          # treat unset variables as an error
 
 trap 'echo "[setup-tools] ERROR: command failed (exit $?) at line $LINENO: $BASH_COMMAND" >&2' ERR
 
-
 # Tool versions and the SHA256 of the release asset we download.
 # The "# renovate:" markers let Renovate bump version and checksum together
 # (see renovate.json). When overriding a *_VERSION via env, the matching
@@ -22,6 +21,8 @@ OSV_SCANNER_SHA256="${OSV_SCANNER_SHA256:-15314940c10d26af9c6649f150b8a47c1262e8
 # renovate: datasource=github-release-attachments depName=opengrep/opengrep
 OPENGREP_VERSION="${OPENGREP_VERSION:-v1.25.0}"
 OPENGREP_SHA256="${OPENGREP_SHA256:-9ac4aebb47ba3f7b0d8fc641ac8749cb6c2f253f616131a67d9631e00d4bea33}"
+
+# renovate: datasource=github-tags depName=semgrep/semgrep-rules
 SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-bf362e1642cc2a16ca44bcae0fdda78639e383c3}"
 SEMGREP_RULES_DIR="/opt/semgrep-rules"
 
@@ -35,6 +36,31 @@ CYCLONEDX_NPM_VERSION="${CYCLONEDX_NPM_VERSION:-6.0.0}"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
+# --- Flag parsing -----------------------------------------------------
+TOOLS="all"
+SBOM_TARGET="none"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --tools)
+      TOOLS="$2"
+      shift 2
+      ;;
+    --sbom-target)
+      SBOM_TARGET="$2"
+      shift 2
+      ;;
+    *)
+      echo "[setup-tools] Unknown flag: $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
+should_install() {
+  [[ "$TOOLS" == "all" || ",$TOOLS," == *",$1,"* ]]
+}
+
 # Download a file and refuse to proceed unless its SHA256 matches the pinned one
 download_and_verify() {
   local url="$1" dest="$2" sha256="$3"
@@ -42,59 +68,66 @@ download_and_verify() {
   echo "${sha256}  ${dest}" | sha256sum -c -
 }
 
-# Installing Trivy from the release tarball (no install.sh piped from an unpinned branch)
-echo "[setup-tools] Installing Trivy ${TRIVY_VERSION}"
-TRIVY_TARBALL="trivy_${TRIVY_VERSION#v}_Linux-64bit.tar.gz"
-download_and_verify \
-  "https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}/${TRIVY_TARBALL}" \
-  "${TMP_DIR}/${TRIVY_TARBALL}" \
-  "${TRIVY_SHA256}"
-sudo tar -xzf "${TMP_DIR}/${TRIVY_TARBALL}" -C /usr/local/bin trivy
-trivy --version
-echo "Trivy installed OK"
+# --- Trivy --------------------------------------------------------------
+if should_install "trivy"; then
+  echo "[setup-tools] Installing Trivy ${TRIVY_VERSION}"
+  TRIVY_TARBALL="trivy_${TRIVY_VERSION#v}_Linux-64bit.tar.gz"
+  download_and_verify \
+    "https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}/${TRIVY_TARBALL}" \
+    "${TMP_DIR}/${TRIVY_TARBALL}" \
+    "${TRIVY_SHA256}"
+  sudo tar -xzf "${TMP_DIR}/${TRIVY_TARBALL}" -C /usr/local/bin trivy
+  trivy --version
+  echo "Trivy installed OK"
+fi
 
-# Installing OSV Scanner
-echo "[setup-tools] Installing OSV Scanner ${OSV_SCANNER_VERSION}"
-download_and_verify \
-  "https://github.com/google/osv-scanner/releases/download/${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64" \
-  "${TMP_DIR}/osv-scanner" \
-  "${OSV_SCANNER_SHA256}"
-sudo install -m 0755 "${TMP_DIR}/osv-scanner" /usr/local/bin/osv-scanner
-osv-scanner --version
-echo "OSV Scanner installed OK"
+# --- OSV Scanner ----------------------------------------------------------
+if should_install "osv-scanner"; then
+  echo "[setup-tools] Installing OSV Scanner ${OSV_SCANNER_VERSION}"
+  download_and_verify \
+    "https://github.com/google/osv-scanner/releases/download/${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64" \
+    "${TMP_DIR}/osv-scanner" \
+    "${OSV_SCANNER_SHA256}"
+  sudo install -m 0755 "${TMP_DIR}/osv-scanner" /usr/local/bin/osv-scanner
+  osv-scanner --version
+  echo "OSV Scanner installed OK"
+fi
 
-# Installing Opengrep
-echo "[setup-tools] Installing OpenGrep ${OPENGREP_VERSION}"
-download_and_verify \
-  "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_manylinux_x86" \
-  "${TMP_DIR}/opengrep" \
-  "${OPENGREP_SHA256}"
-sudo install -m 0755 "${TMP_DIR}/opengrep" /usr/local/bin/opengrep
-opengrep --version
-echo "OpenGrep installed OK"
+# --- OpenGrep -------------------------------------------------------------
+if should_install "opengrep"; then
+  echo "[setup-tools] Installing OpenGrep ${OPENGREP_VERSION}"
+  download_and_verify \
+    "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_manylinux_x86" \
+    "${TMP_DIR}/opengrep" \
+    "${OPENGREP_SHA256}"
+  sudo install -m 0755 "${TMP_DIR}/opengrep" /usr/local/bin/opengrep
+  opengrep --version
+  echo "OpenGrep installed OK"
+fi
 
-# Downloading Dockerfile rulset
-echo "[setup-tools] Cloning semgrep-rules @ ${SEMGREP_RULES_REF}"
-sudo rm -rf "${SEMGREP_RULES_DIR}"
-sudo git clone --quiet https://github.com/semgrep/semgrep-rules.git "${SEMGREP_RULES_DIR}"
-sudo git -C "${SEMGREP_RULES_DIR}" checkout --quiet "${SEMGREP_RULES_REF}"
-echo "semgrep-rules ready at ${SEMGREP_RULES_DIR} (ref: ${SEMGREP_RULES_REF})"
+# --- Semgrep community Dockerfile ruleset (cloned, not registry) ---------
+if should_install "semgrep-rules"; then
+  echo "[setup-tools] Cloning semgrep-rules @ ${SEMGREP_RULES_REF}"
+  sudo rm -rf "${SEMGREP_RULES_DIR}"
+  sudo git clone --quiet https://github.com/semgrep/semgrep-rules.git "${SEMGREP_RULES_DIR}"
+  sudo git -C "${SEMGREP_RULES_DIR}" checkout --quiet "${SEMGREP_RULES_REF}"
+  echo "semgrep-rules ready at ${SEMGREP_RULES_DIR} (ref: ${SEMGREP_RULES_REF})"
+fi
 
+# --- Hadolint ---------------------------------------------------------
+if should_install "hadolint"; then
+  echo "[setup-tools] Installing Hadolint ${HADOLINT_VERSION}"
+  download_and_verify \
+    "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-linux-x86_64" \
+    "${TMP_DIR}/hadolint" \
+    "${HADOLINT_SHA256}"
+  sudo install -m 0755 "${TMP_DIR}/hadolint" /usr/local/bin/hadolint
+  hadolint --version
+  echo "Hadolint installed OK"
+fi
 
-echo "[setup-tools] Installing Hadolint ${HADOLINT_VERSION}"
-download_and_verify \
-  "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64" \
-  "${TMP_DIR}/hadolint" \
-  "${HADOLINT_SHA256}"
-sudo install -m 0755 "${TMP_DIR}/hadolint" /usr/local/bin/hadolint
-hadolint --version
-echo "Hadolint installed OK"
-
-
-# Generate SBOM based on project type
-PROJECT_TYPE="${1:-none}"   # maven | npm | none
-
-case "$PROJECT_TYPE" in
+# --- SBOM generation ----------------------------------------------------
+case "$SBOM_TARGET" in
   maven)
     echo "Generating SBOM for Maven project"
     mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom -q
@@ -107,7 +140,7 @@ case "$PROJECT_TYPE" in
     echo "No SBOM generation needed"
     ;;
   *)
-    echo "Unknown PROJECT_TYPE: $PROJECT_TYPE" >&2 # redirect error message to stderr
+    echo "Unknown SBOM_TARGET: $SBOM_TARGET" >&2
     exit 1
     ;;
 esac

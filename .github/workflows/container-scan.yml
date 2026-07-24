@@ -8,7 +8,7 @@ on:
     - cron: '0 2 * * 1' # weekly SCA scan, every Monday 02:00 UTC
     
 jobs:
-  sca:
+  container-scan:
     name: Container Vulnerability Scanning
     runs-on: ubuntu-latest
     permissions:
@@ -42,7 +42,10 @@ jobs:
         run: docker build -t ${{ env.IMAGE_NAME }} .
 
       - name: Setup tools
-        run: bash .github/scripts/setup-tools.sh
+        run: |
+          bash .github/scripts/setup-tools.sh \
+            --tools trivy,osv-scanner,opengrep,hadolint,semgrep-rules \
+            --sbom-target maven
       
       - name: Run SAST scanning
         run: python .github/scripts/container_scan.py --scan-type sast
