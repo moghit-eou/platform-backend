@@ -44,11 +44,11 @@ jobs:
         run: bash .github/scripts/setup-tools.sh
       
       - name: Run SAST scanning
-        run: python .github/scripts/container_scan.py --scan-type sast
+        run: python3 .github/scripts/container_scan.py --scan-type sast
 
       - name: Run SCA scanning
         if: always()
-        run: python .github/scripts/container_scan.py --scan-type sca --image ${{ env.IMAGE_NAME }}
+        run: python3 .github/scripts/container_scan.py --scan-type sca --image ${{ env.IMAGE_NAME }}
 
       - name: Upload Trivy SARIF to GitHub Security tab
         id: upload_trivy
