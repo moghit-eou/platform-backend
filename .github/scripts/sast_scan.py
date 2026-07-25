@@ -17,13 +17,7 @@ logging.basicConfig(
 logger = logging.getLogger("sast-orchestrator")
 
 # --- Configurable values -----------------------------------------------
-# SEMGREP_CONFIGS: space-separated list of registry packs or local rule dirs,
-# e.g. "p/security-audit p/owasp-top-ten p/cwe-top-25 p/java"
-# Set per-repo in the workflow env (Maven repo gets p/java, npm repo gets p/javascript, etc.)
 SEMGREP_CONFIGS = os.getenv("SEMGREP_CONFIGS", "p/security-audit p/owasp-top-ten p/cwe-top-25 p/trailofbits").split()
-
-# SEMGREP_EXCLUDE: space-separated glob patterns, kept out of the scan scope.
-# Dockerfile/.github are owned by the container-scan pipeline, not this one.
 SEMGREP_EXCLUDE = os.getenv(
     "SEMGREP_EXCLUDE",
     ".github Dockerfile* target/** dist/** build/** node_modules/** .angular/**"
@@ -31,10 +25,6 @@ SEMGREP_EXCLUDE = os.getenv(
 
 SEMGREP_SARIF_OUTPUT = os.getenv("SEMGREP_SARIF_OUTPUT", "sast-semgrep-app.sarif")
 SAST_SEVERITY = os.getenv("SAST_SEVERITY", "ERROR")  # ERROR | WARNING | INFO
-
-# SAST_ENFORCE: "true" -> tool exits non-zero on findings and the pipeline gate fails.
-# "false" -> audit/baseline mode, scan runs and uploads SARIF but never blocks the pipeline.
-# Flip this to "true" once the rule/path selection has been tuned against real findings.
 SAST_ENFORCE = os.getenv("SAST_ENFORCE", "false").lower() == "true"
 
 
