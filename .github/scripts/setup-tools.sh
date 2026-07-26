@@ -105,6 +105,15 @@ if should_install "opengrep"; then
   echo "OpenGrep installed OK"
 fi
 
+# --- Semgrep community Dockerfile ruleset (cloned, not registry) ---------
+if should_install "semgrep-rules"; then
+  echo "[setup-tools] Cloning semgrep-rules @ ${SEMGREP_RULES_REF}"
+  sudo rm -rf "${SEMGREP_RULES_DIR}"
+  sudo git clone --quiet https://github.com/semgrep/semgrep-rules.git "${SEMGREP_RULES_DIR}"
+  sudo git -C "${SEMGREP_RULES_DIR}" checkout --quiet "${SEMGREP_RULES_REF}"
+  echo "semgrep-rules ready at ${SEMGREP_RULES_DIR} (ref: ${SEMGREP_RULES_REF})"
+fi
+
 # --- Hadolint ---------------------------------------------------------
 if should_install "hadolint"; then
   echo "[setup-tools] Installing Hadolint ${HADOLINT_VERSION}"

@@ -16,32 +16,30 @@ logging.basicConfig(
 logger = logging.getLogger("sast-orchestrator")
 
 # --- Configurable values -----------------------------------------------
-SEMGREP_CONFIGS = os.getenv(
-    "SEMGREP_CONFIGS",
-    "p/r2c-security-audit p/owasp-top-ten p/cwe-top-25 p/comment p/gitleaks p/findsecbugs p/java"
+SEMGREP_CONFIG_RULESETS = os.getenv(
+    "SEMGREP_CONFIG_RULESETS",
+    "/opt/semgrep-rules"
 ).split()
 OPENGREP_EXCLUDE = os.getenv(
     "OPENGREP_EXCLUDE",
-    ".github Dockerfile*"
+    ".github/scripts Dockerfile"
 ).split()
-
 OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "sast-opengrep-app.sarif")
-SAST_SEVERITY = os.getenv("SAST_SEVERITY", "ERROR")
-
 
 def run_opengrep():
-    cmd = ["opengrep", "scan"] + \
-        [item for config in SEMGREP_CONFIGS for item in ("--config", config)] + \
-        [item for pattern in OPENGREP_EXCLUDE for item in ("--exclude", pattern)] + [
-        f"--severity={SAST_SEVERITY}",
-        "--error",
-        "--sarif",
-        "--output", OPENGREP_SARIF_OUTPUT
-    ]
+    base_cmd = ["opengrep", "scan"] + \
+        [f"--config {config}" for config in SEMGREP_CONFIG_RULESETS] + \
+        [f"--exclude={pattern}" for pattern in OPENGREP_EXCLUDE]
 
-    logger.info(f"{BOLD}Running:{RESET} {' '.join(cmd)}")
-    return subprocess.run(cmd).returncode
+    report_cmd = (base_cmd + ["--sarif", "--output", OPENGREP_SARIF_OUTPUT])
+    report_cmd = " ".join(report_cmd).split()
+    logger.info(f"{BOLD}Running (report):{RESET} {' '.join(report_cmd)}")
+    subprocess.run(report_cmd)
 
+    gate_cmd = (base_cmd + ["--severity=ERROR", "--error"])
+    gate_cmd = " ".join(gate_cmd).split()
+    logger.info(f"{BOLD}Running (gate):{RESET} {' '.join(gate_cmd)}")
+    return subprocess.run(gate_cmd).returncode
 
 def main():
 
