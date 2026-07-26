@@ -31,13 +31,13 @@ def run_opengrep():
         [f"--config {config}" for config in SEMGREP_CONFIGS] + \
         [f"--exclude={pattern}" for pattern in OPENGREP_EXCLUDE]
 
-    # Full scan, all severities, for SARIF upload / visibility. Never gates the pipeline.
-    report_cmd = base_cmd + ["--sarif", "--output", OPENGREP_SARIF_OUTPUT]
+    report_cmd = (base_cmd + ["--sarif", "--output", OPENGREP_SARIF_OUTPUT])
+    report_cmd = " ".join(report_cmd).split()
     logger.info(f"{BOLD}Running (report):{RESET} {' '.join(report_cmd)}")
     subprocess.run(report_cmd)
 
-    # ERROR-severity only, decides pass/fail for the pipeline.
-    gate_cmd = base_cmd + ["--severity=ERROR", "--error"]
+    gate_cmd = (base_cmd + ["--severity=ERROR", "--error"])
+    gate_cmd = " ".join(gate_cmd).split()
     logger.info(f"{BOLD}Running (gate):{RESET} {' '.join(gate_cmd)}")
     return subprocess.run(gate_cmd).returncode
 
