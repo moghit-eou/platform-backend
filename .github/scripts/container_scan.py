@@ -130,7 +130,7 @@ def run_semgrep():
     cmd = [
         "opengrep",  "scan",
         "--config",  "p/dockerfile",
-        "--include", "Dockerfile",
+        "--include=", "Dockerfile",
         "--severity=ERROR",
         "--error",
         "--sarif",

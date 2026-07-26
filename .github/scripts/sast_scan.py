@@ -22,7 +22,7 @@ SEMGREP_CONFIGS = os.getenv(
 ).split()
 OPENGREP_EXCLUDE = os.getenv(
     "OPENGREP_EXCLUDE",
-    ".github Dockerfile*"
+    ".xgithub xDockerfile"
 ).split()
 
 OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "sast-opengrep-app.sarif")
@@ -30,13 +30,13 @@ SAST_SEVERITY = os.getenv("SAST_SEVERITY", "ERROR")
 
 
 def run_opengrep():
-    cmd = ["opengrep", "scan"] + \
+    cmd = ["semgrep", "ci"] + \
         [item for config in SEMGREP_CONFIGS for item in ("--config", config)] + \
-        [item for pattern in OPENGREP_EXCLUDE for item in ("--exclude", pattern)] + [
-        f"--severity={SAST_SEVERITY}",
+        [f"--exclude={pattern}" for pattern in OPENGREP_EXCLUDE] + [
+        #f"--severity={SAST_SEVERITY}",
         "--error",
-        "--sarif",
-        "--output", OPENGREP_SARIF_OUTPUT
+        #"--sarif",
+        #"--output", OPENGREP_SARIF_OUTPUT
     ]
 
     logger.info(f"{BOLD}Running:{RESET} {' '.join(cmd)}")
