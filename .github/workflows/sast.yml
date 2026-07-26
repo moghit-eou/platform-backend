@@ -27,7 +27,7 @@ jobs:
           python-version: '3.14.4'
 
       - name: Setup tools
-        run: bash .github/scripts/setup-tools.sh --install-tool opengrep
+        run: bash .github/scripts/setup-tools.sh --install-tool opengrep,semgrep-rules
 
       - name: Run SAST scanning
         run: python .github/scripts/sast_scan.py
