@@ -18,30 +18,28 @@ logger = logging.getLogger("sast-orchestrator")
 # --- Configurable values -----------------------------------------------
 SEMGREP_CONFIGS = os.getenv(
     "SEMGREP_CONFIGS",
-    "p/r2c-security-audit p/owasp-top-ten p/cwe-top-25 p/comment p/gitleaks p/findsecbugs p/java"
+    "opt/semgrep-rules"
 ).split()
 OPENGREP_EXCLUDE = os.getenv(
     "OPENGREP_EXCLUDE",
-    ".xgithub xDockerfile"
+    ".github/scripts Dockerfile"
 ).split()
-
 OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "sast-opengrep-app.sarif")
-SAST_SEVERITY = os.getenv("SAST_SEVERITY", "ERROR")
-
 
 def run_opengrep():
-    cmd = ["semgrep", "ci"] + \
-        [item for config in SEMGREP_CONFIGS for item in ("--config", config)] + \
-        [f"--exclude={pattern}" for pattern in OPENGREP_EXCLUDE] + [
-        #f"--severity={SAST_SEVERITY}",
-        "--error",
-        #"--sarif",
-        #"--output", OPENGREP_SARIF_OUTPUT
-    ]
+    base_cmd = ["opengrep", "scan"] + \
+        [f"--config={config}" for config in SEMGREP_CONFIGS] + \
+        [f"--exclude={pattern}" for pattern in OPENGREP_EXCLUDE]
 
-    logger.info(f"{BOLD}Running:{RESET} {' '.join(cmd)}")
-    return subprocess.run(cmd).returncode
+    # Full scan, all severities, for SARIF upload / visibility. Never gates the pipeline.
+    report_cmd = base_cmd + ["--sarif", "--output", OPENGREP_SARIF_OUTPUT]
+    logger.info(f"{BOLD}Running (report):{RESET} {' '.join(report_cmd)}")
+    subprocess.run(report_cmd)
 
+    # ERROR-severity only, decides pass/fail for the pipeline.
+    gate_cmd = base_cmd + ["--severity=ERROR", "--error"]
+    logger.info(f"{BOLD}Running (gate):{RESET} {' '.join(gate_cmd)}")
+    return subprocess.run(gate_cmd).returncode
 
 def main():
 

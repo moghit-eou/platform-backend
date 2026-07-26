@@ -13,11 +13,9 @@ jobs:
       contents: read
       security-events: write # required for uploading SAST results to github security
     env:
-      SEMGREP_CONFIG_RULESETS: "p/java p/owasp-top-ten p/cwe-top-25 p/security-audit p/findsecbugs"
+      SEMGREP_CONFIG_RULESETS: "opt/semgrep-rules p/findsecbugs"
       OPENGREP_EXCLUDE: ".github Dockerfile*"
       SEMGREP_SARIF_OUTPUT: sast-semgrep-app.sarif
-      SAST_SEVERITY: ERROR
-      SAST_ENFORCE: "false"
 
     steps:
       - name: Check out repository
