@@ -29,6 +29,7 @@ TRIVY_SCA_SARIF_OUTPUT = os.getenv("TRIVY_SCA_SARIF_OUTPUT", "sca-trivy-containe
 OSV_SCA_SARIF_OUTPUT = os.getenv("OSV_SCA_SARIF_OUTPUT", "sca-osv-container.sarif")
 
 # --- SAST/Code Linting (OpenGrep + Hadolint) ---
+SEMGREP_RULES_DIR = os.getenv("SEMGREP_RULES_DIR", "/opt/semgrep-rules")
 OPENGREP_SAST_SARIF_OUTPUT = os.getenv("OPENGREP_SAST_SARIF_OUTPUT", "sast-opengrep-dockerfile.sarif")
 HADOLINT_SAST_SARIF_OUTPUT = os.getenv("HADOLINT_SAST_SARIF_OUTPUT", "sast-hadolint-dockerfile.sarif")
 
@@ -126,11 +127,13 @@ def run_hadolint():
 
     return result.returncode
 
+
 def run_semgrep():
     cmd = [
         "opengrep",  "scan",
         "--config",  "p/dockerfile",
-        "--include=", "Dockerfile",
+        "--config",   SEMGREP_RULES_DIR,
+        "--include", "Dockerfile",
         "--severity=ERROR",
         "--error",
         "--sarif",
