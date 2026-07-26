@@ -16,9 +16,9 @@ logging.basicConfig(
 logger = logging.getLogger("sast-orchestrator")
 
 # --- Configurable values -----------------------------------------------
-SEMGREP_CONFIGS = os.getenv(
-    "SEMGREP_CONFIGS",
-    "opt/semgrep-rules"
+SEMGREP_CONFIG_RULESETS = os.getenv(
+    "SEMGREP_CONFIG_RULESETS",
+    "/opt/semgrep-rules"
 ).split()
 OPENGREP_EXCLUDE = os.getenv(
     "OPENGREP_EXCLUDE",
@@ -28,7 +28,7 @@ OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "sast-opengrep-app.sa
 
 def run_opengrep():
     base_cmd = ["opengrep", "scan"] + \
-        [f"--config {config}" for config in SEMGREP_CONFIGS] + \
+        [f"--config {config}" for config in SEMGREP_CONFIG_RULESETS] + \
         [f"--exclude={pattern}" for pattern in OPENGREP_EXCLUDE]
 
     report_cmd = (base_cmd + ["--sarif", "--output", OPENGREP_SARIF_OUTPUT])
