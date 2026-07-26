@@ -2,7 +2,6 @@ import subprocess
 import os
 import sys
 import logging
-import shlex
 
 GREEN = '\033[92m'
 RED = '\033[91m'
@@ -17,42 +16,43 @@ logging.basicConfig(
 logger = logging.getLogger("sast-orchestrator")
 
 # --- Configurable values -----------------------------------------------
-SEMGREP_CONFIGS = os.getenv("SEMGREP_CONFIGS", "p/security-audit p/owasp-top-ten p/cwe-top-25 p/trailofbits").split()
-SEMGREP_EXCLUDE = os.getenv(
-    "SEMGREP_EXCLUDE",
-    ".github Dockerfile* target/** dist/** build/** node_modules/** .angular/**"
+SEMGREP_CONFIGS = os.getenv(
+    "SEMGREP_CONFIGS",
+    "p/r2c-security-audit p/owasp-top-ten p/cwe-top-25 p/comment p/gitleaks p/findsecbugs p/java"
+).split()
+OPENGREP_EXCLUDE = os.getenv(
+    "OPENGREP_EXCLUDE",
+    ".github Dockerfile*"
 ).split()
 
-SEMGREP_SARIF_OUTPUT = os.getenv("SEMGREP_SARIF_OUTPUT", "sast-semgrep-app.sarif")
-SAST_SEVERITY = os.getenv("SAST_SEVERITY", "ERROR")  # ERROR | WARNING | INFO
+OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "sast-opengrep-app.sarif")
+SAST_SEVERITY = os.getenv("SAST_SEVERITY", "ERROR")
 SAST_ENFORCE = os.getenv("SAST_ENFORCE", "false").lower() == "true"
 
 
-def run_semgrep():
+def run_opengrep():
     cmd = ["opengrep", "scan"]
 
     for config in SEMGREP_CONFIGS:
         cmd += ["--config", config]
 
-    for pattern in SEMGREP_EXCLUDE:
+    for pattern in OPENGREP_EXCLUDE:
         cmd += ["--exclude", pattern]
 
     cmd += [f"--severity={SAST_SEVERITY}"]
 
     if SAST_ENFORCE:
-        cmd += ["--error"]  # non-zero exit when blocking-severity findings exist
+        cmd += ["--error"]
 
-    cmd += ["--sarif", "--output", SEMGREP_SARIF_OUTPUT]
+    cmd += ["--sarif", "--output", OPENGREP_SARIF_OUTPUT]
 
-    logger.info(f"{BOLD}Running:{RESET} {' '.join(shlex.quote(c) for c in cmd)}")
+    logger.info(f"{BOLD}Running:{RESET} {' '.join(cmd)}")
     return subprocess.run(cmd).returncode
 
 
 def main():
-    logger.info(f"{BOLD}Initiating SAST pipeline "
-                f"({'ENFORCE' if SAST_ENFORCE else 'AUDIT/non-blocking'} mode){RESET}")
 
-    exit_code = run_semgrep()
+    exit_code = run_opengrep()
     logger.info("-" * 40)
 
     if exit_code == 0:

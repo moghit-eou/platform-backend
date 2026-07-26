@@ -13,8 +13,8 @@ jobs:
       contents: read
       security-events: write # required for uploading SAST results to github security
     env:
-      SEMGREP_CONFIGS: "p/security-audit p/owasp-top-ten p/cwe-top-25 p/trailofbits p/java"
-      SEMGREP_EXCLUDE: ".github Dockerfile* target/** dist/** build/** node_modules/** .angular/**"
+      SEMGREP_CONFIG_RULESETS: "p/java p/owasp-top-ten p/cwe-top-25 p/security-audit p/findsecbugs"
+      OPENGREP_EXCLUDE: ".github Dockerfile*"
       SEMGREP_SARIF_OUTPUT: sast-semgrep-app.sarif
       SAST_SEVERITY: ERROR
       SAST_ENFORCE: "false"
