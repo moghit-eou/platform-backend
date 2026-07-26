@@ -28,7 +28,7 @@ OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "sast-opengrep-app.sa
 
 def run_opengrep():
     base_cmd = ["opengrep", "scan"] + \
-        [f"--config={config}" for config in SEMGREP_CONFIGS] + \
+        [f"--config {config}" for config in SEMGREP_CONFIGS] + \
         [f"--exclude={pattern}" for pattern in OPENGREP_EXCLUDE]
 
     # Full scan, all severities, for SARIF upload / visibility. Never gates the pipeline.
