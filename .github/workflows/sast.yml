@@ -12,10 +12,10 @@ jobs:
     permissions:
       contents: read
       security-events: write # required for uploading SAST results to github security
-    env:
-      SEMGREP_CONFIG_RULESETS: "opt/semgrep-rules p/findsecbugs"
-      OPENGREP_EXCLUDE: ".github Dockerfile*"
-      SEMGREP_SARIF_OUTPUT: sast-semgrep-app.sarif
+      env:
+        SEMGREP_CONFIG_RULESETS: "opt/semgrep-rules p/findsecbugs"
+        OPENGREP_EXCLUDE: ".github Dockerfile*"
+        SEMGREP_SARIF_OUTPUT: sast-semgrep-app.sarif
 
     steps:
       - name: Check out repository
