@@ -27,24 +27,17 @@ OPENGREP_EXCLUDE = os.getenv(
 
 OPENGREP_SARIF_OUTPUT = os.getenv("OPENGREP_SARIF_OUTPUT", "sast-opengrep-app.sarif")
 SAST_SEVERITY = os.getenv("SAST_SEVERITY", "ERROR")
-SAST_ENFORCE = os.getenv("SAST_ENFORCE", "false").lower() == "true"
 
 
 def run_opengrep():
-    cmd = ["opengrep", "scan"]
-
-    for config in SEMGREP_CONFIGS:
-        cmd += ["--config", config]
-
-    for pattern in OPENGREP_EXCLUDE:
-        cmd += ["--exclude", pattern]
-
-    cmd += [f"--severity={SAST_SEVERITY}"]
-
-    if SAST_ENFORCE:
-        cmd += ["--error"]
-
-    cmd += ["--sarif", "--output", OPENGREP_SARIF_OUTPUT]
+    cmd = ["opengrep", "scan"] + \
+        [item for config in SEMGREP_CONFIGS for item in ("--config", config)] + \
+        [item for pattern in OPENGREP_EXCLUDE for item in ("--exclude", pattern)] + [
+        f"--severity={SAST_SEVERITY}",
+        "--error",
+        "--sarif",
+        "--output", OPENGREP_SARIF_OUTPUT
+    ]
 
     logger.info(f"{BOLD}Running:{RESET} {' '.join(cmd)}")
     return subprocess.run(cmd).returncode
@@ -62,28 +55,25 @@ def main():
     else:
         status = "ERROR"
 
-    if not os.path.exists(SEMGREP_SARIF_OUTPUT):
-        logger.error(f"{RED}[!] semgrep SARIF missing: {SEMGREP_SARIF_OUTPUT}, tool failed to run{RESET}")
+    if not os.path.exists(OPENGREP_SARIF_OUTPUT):
+        logger.error(f"{RED}[!] opengrep SARIF missing: {OPENGREP_SARIF_OUTPUT}, tool failed to run{RESET}")
         status = "ERROR"
 
     logger.info(f"\n{BOLD}========== SAST PIPELINE SUMMARY =========={RESET}")
     if status == "PASSED":
-        logger.info(f"[semgrep]: {GREEN}PASSED (exit code 0){RESET}")
+        logger.info(f"[opengrep]: {GREEN}PASSED (exit code 0){RESET}")
     elif status == "FAILED":
-        logger.error(f"[semgrep]: {RED}FAILED (exit code 1 - {SAST_SEVERITY}-severity findings){RESET}")
+        logger.error(f"[opengrep]: {RED}FAILED (exit code 1 - {SAST_SEVERITY}-severity findings){RESET}")
     else:
-        logger.error(f"[semgrep]: {RED}ERROR (exit code {exit_code}, tool did not run correctly){RESET}")
+        logger.error(f"[opengrep]: {RED}ERROR (exit code {exit_code}, tool did not run correctly){RESET}")
     logger.info(f"{BOLD}==========================================={RESET}\n")
 
     if status == "ERROR":
         sys.exit(1)
 
-    if SAST_ENFORCE and status == "FAILED":
+    if status == "FAILED":
         logger.error(f"{RED}SAST gate failed: blocking-severity findings present.{RESET}")
         sys.exit(1)
-
-    if status == "FAILED":
-        logger.warning(f"{YELLOW}Audit mode: findings present but not blocking the pipeline.{RESET}")
 
 
 if __name__ == "__main__":
