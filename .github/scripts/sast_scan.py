@@ -75,6 +75,5 @@ def main():
         logger.error(f"{RED}SAST gate failed: blocking-severity findings present.{RESET}")
         sys.exit(1)
 
-
 if __name__ == "__main__":
     main()
