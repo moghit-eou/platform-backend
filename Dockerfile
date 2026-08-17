@@ -1,7 +1,7 @@
 #######################################################
 # Build the spring boot maven project
 #######################################################
-FROM maven:3.9.11-amazoncorretto-21 AS mvn-build-env
+FROM maven:3.9.11-amazoncorretto-21@sha256:82d98fbed447e3f7dfbf1089840a51bfaeb5651cb47a9c5820139d054db3dde1 AS mvn-build-env
 LABEL maintainer="Thanasis Karampatsis <tkarabatsis@athenarc.gr>"
 
 ENV CODE_PATH="/opt/code"
@@ -19,7 +19,7 @@ RUN mvn -B -ntp clean package
 #######################################################
 # Setup the running container
 #######################################################
-FROM amazoncorretto:21-alpine3.21
+FROM amazoncorretto:21-alpine3.21@sha256:392b286e53c7f4cd366bd2f752f509b7e24de9f414564bccd7d152a58214a8b6
 
 #######################################################
 # Setting up timezone
