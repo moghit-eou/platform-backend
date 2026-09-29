@@ -27,7 +27,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
     }
-    
+
     // ExperimentFolderNotFoundException and ExperimentSetNotFoundException extend
     // ExperimentNotFoundException, so the 404 handler above already covers them.
 
